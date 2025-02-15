@@ -83,12 +83,26 @@ import './CameraFeed.css';
          audio={false}                                                                                                                                
          videoConstraints={videoConstraints}                                                                                                          
          className="webcam-preview"                                                                                                                   
-         onUserMediaError={(err) => console.error('Webcam error:', err)}                                                                              
+         onUserMediaError={(err) => setError(err.message)}
+         onUserMedia={() => setError(null)}
        />                                                                                                                                             
      )}                                                                                                                                               
      <button onClick={toggleWebcam} className="webcam-toggle">                                                                                        
        {isWebcamOn ? 'Stop Webcam' : 'Start Webcam'}                                                                                                  
-     </button> 
+     </button>
+     {error && (
+       <div className="error-message">
+         🚨 Camera Error: {error}
+         <div style={{ marginTop: 8, fontSize: '0.9em' }}>
+           Please check:
+           <ul style={{ textAlign: 'left', margin: '4px 0' }}>
+             <li>Browser permissions</li>
+             <li>Connected cameras</li>
+             <li>Other apps using camera</li>
+           </ul>
+         </div>
+       </div>
+     )}
 
        <canvas ref={canvasRef} width={640} height={480} hidden />
        <div className="camera-metrics">
@@ -129,6 +143,16 @@ import './CameraFeed.css';
      color: #dc3545;
      font-weight: bold;
      margin-left: 8px;
+   }
+
+   .error-message {
+     background: #fff3f3;
+     border: 1px solid #dc3545;
+     color: #dc3545;
+     padding: 12px;
+     border-radius: 4px;
+     margin: 12px 0;
+     text-align: center;
    }
  `;
 
