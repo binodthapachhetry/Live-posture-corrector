@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';                                                                                      
- import Webcam from 'react-webcam';                                                                                                                     
+import Webcam from 'react-webcam'; 
+import './CameraFeed.css';                                                                                                                    
                                                                                                                                                         
  type VideoConstraints = {                                                                                                                              
    facingMode: string;                                                                                                                                  
@@ -14,7 +15,8 @@ import { useState, useRef, useCallback, useEffect } from 'react';
    const [aspectWarning, setAspectWarning] = useState<boolean>(false);
    const webcamRef = useRef<Webcam>(null);                                                                                                              
    const canvasRef = useRef<HTMLCanvasElement>(null);                                                                                                   
-   const animationFrameRef = useRef<number>(0);                                                                                                         
+   const animationFrameRef = useRef<number>(0);   
+   const [error, setError] = useState<string | null>(null);                                                                                                       
                                                                                                                                                         
    const [videoConstraints] = useState<MediaTrackConstraints>({                                                                                         
      facingMode: 'user',                                                                                                                                
@@ -69,10 +71,25 @@ import { useState, useRef, useCallback, useEffect } from 'react';
        clearInterval(fpsInterval);
        cancelAnimationFrame(animationFrameRef.current);
      };                                                                      
-   }, [isWebcamOn, actualResolution.width, actualResolution.height]);                                                                                                                                    
+   }, [isWebcamOn]);                                                                                                                                    
                                                                                                                                                         
-   return (                                                                                                                                             
-     <div className="camera-feed">                                                                                                                      
+   return (
+
+     <div className="camera-feed">
+
+      {isWebcamOn && (                                                                                                                                 
+       <Webcam                                                                                                                                        
+         ref={webcamRef}                                                                                                                              
+         audio={false}                                                                                                                                
+         videoConstraints={videoConstraints}                                                                                                          
+         className="webcam-preview"                                                                                                                   
+         onUserMediaError={(err) => console.error('Webcam error:', err)}                                                                              
+       />                                                                                                                                             
+     )}                                                                                                                                               
+     <button onClick={toggleWebcam} className="webcam-toggle">                                                                                        
+       {isWebcamOn ? 'Stop Webcam' : 'Start Webcam'}                                                                                                  
+     </button> 
+
        <canvas ref={canvasRef} width={640} height={480} hidden />
        <div className="camera-metrics">
          <div className="metric">
@@ -87,7 +104,8 @@ import { useState, useRef, useCallback, useEffect } from 'react';
            ⚙️ Target: 640x480 @ 30FPS
          </div>
        </div>
-       {/* Rest of component remains same but with TypeScript types */}                                                                                 
+       {/* Rest of component remains same but with TypeScript types */} 
+
      </div>                                                                                                                                             
    );                                                                                                                                                   
  };
