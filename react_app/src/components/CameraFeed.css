@@ -1,31 +1,143 @@
- /* Camera Feed Styles */                                                                                                                             
- .camera-feed {                                                                                                                                       
-    display: flex;                                                                                                                                     
-    flex-direction: column;                                                                                                                            
-    align-items: center;                                                                                                                               
-    margin: 2rem 0;                                                                                                                                    
-  }                                                                                                                                                    
-                                                                                                                                                       
-  .webcam-preview {                                                                                                                                    
-    width: 640px;                                                                                                                                      
-    height: 480px;                                                                                                                                     
-    border: 2px solid #333;                                                                                                                            
-    border-radius: 8px;                                                                                                                                
-    margin: 16px;                                                                                                                                      
-  }                                                                                                                                                    
-                                                                                                                                                       
-  .webcam-toggle {                                                                                                                                     
-    padding: 12px 24px;                                                                                                                                
-    font-size: 16px;                                                                                                                                   
-    background: #007bff;                                                                                                                               
-    color: white;                                                                                                                                      
-    border: none;                                                                                                                                      
-    border-radius: 4px;                                                                                                                                
-    cursor: pointer;                                                                                                                                   
-    transition: background 0.2s;                                                                                                                       
-  }                                                                                                                                                    
-                                                                                                                                                       
-  .webcam-toggle:hover {                                                                                                                               
-    background: #0056b3;                                                                                                                               
-  }                                                                                                                                                    
-           
+.camera-feed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.camera-container {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  margin-bottom: 16px;
+}
+
+.webcam-preview {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.webcam-toggle {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin: 10px 0;
+}
+
+.webcam-toggle:hover {
+  background-color: #3367d6;
+}
+
+.webcam-toggle.active {
+  background-color: #ea4335;
+}
+
+.webcam-toggle.active:hover {
+  background-color: #d33426;
+}
+
+.webcam-toggle:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.camera-metrics {
+  margin: 12px 0;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 640px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.metric {
+  font-family: monospace;
+  font-size: 14px;
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+}
+
+.metric-warning {
+  color: #dc3545;
+  font-weight: bold;
+  margin-left: 8px;
+}
+
+.error-message {
+  background: #fff3f3;
+  border: 1px solid #dc3545;
+  color: #dc3545;
+  padding: 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+  text-align: center;
+  width: 100%;
+  max-width: 640px;
+}
+
+.loading-indicator {
+  margin: 10px 0;
+  color: #666;
+  font-style: italic;
+}
+
+.posture-status {
+  margin-left: 8px;
+  font-weight: bold;
+}
+
+.posture-status.good {
+  color: #4CAF50;
+}
+
+.posture-status.bad {
+  color: #F44336;
+}
+
+.tab-inactive-notice {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 8px 16px;
+  border-radius: 4px;
+  margin: 10px 0;
+  font-size: 14px;
+  text-align: center;
+  width: 100%;
+  max-width: 640px;
+}
+
+.controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 10px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .camera-feed {
+    padding: 0 16px;
+  }
+  
+  .webcam-toggle {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+  
+  .metric {
+    font-size: 12px;
+  }
+}

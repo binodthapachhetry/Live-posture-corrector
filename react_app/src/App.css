@@ -1,12 +1,125 @@
 .app-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
-  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-h1 {
-  margin-bottom: 2rem;
-  color: #1a1a1a;
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.settings-toggle {
+  background-color: #f0f0f0;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.settings-toggle:hover {
+  background-color: #e0e0e0;
+}
+
+.settings-panel {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.settings-panel h2 {
+  margin-top: 0;
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.setting-group {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.setting-group label {
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+  min-width: 200px;
+}
+
+.setting-group input[type="range"] {
+  flex: 1;
+  max-width: 200px;
+  margin: 0 16px;
+}
+
+.setting-group span {
+  min-width: 40px;
+  text-align: right;
+  font-family: monospace;
+}
+
+.setting-info {
+  background-color: #e8f4fd;
+  padding: 12px;
+  border-radius: 4px;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.setting-info p {
+  margin: 0;
+}
+
+.app-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #eaeaea;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .app-header h1 {
+    margin-bottom: 10px;
+  }
+  
+  .setting-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .setting-group label {
+    margin-bottom: 8px;
+  }
+  
+  .setting-group input[type="range"] {
+    width: 100%;
+    max-width: none;
+    margin: 8px 0;
+  }
 }

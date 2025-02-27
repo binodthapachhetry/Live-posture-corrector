@@ -1,50 +1,87 @@
-# React + TypeScript + Vite
+# Posture Corrector Web Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A privacy-focused web application that helps users maintain good posture by analyzing webcam feed in real-time, entirely client-side.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Real-time posture analysis** using TensorFlow.js and MoveNet pose detection
+- **Privacy-preserving** - all processing happens locally in the browser
+- **Visual feedback** with overlay showing posture status and body points
+- **Tab visibility detection** to pause processing when tab is inactive
+- **Cross-tab notifications** to prevent multiple instances running simultaneously
+- **Performance optimization** with adaptive frame rate and resolution
+- **Responsive design** that works on desktop and mobile devices
 
-## Expanding the ESLint configuration
+## Technical Architecture
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### Core Technologies
 
-- Configure the top-level `parserOptions` property like this:
+- **React** - UI framework
+- **TypeScript** - Type safety and developer experience
+- **TensorFlow.js** - Machine learning in the browser
+- **MoveNet** - Lightweight pose detection model
+- **Web APIs** - Page Visibility API, Notifications API, BroadcastChannel API
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+### Key Components
+
+1. **PostureDetectionService** - Handles model loading and pose analysis
+2. **TabVisibilityService** - Manages tab visibility state and cross-tab communication
+3. **NotificationService** - Provides user notifications for bad posture
+4. **CameraFeed** - Main component for webcam handling and frame processing
+5. **PostureOverlay** - Visual feedback component showing posture status
+
+## Privacy
+
+This application is designed with privacy as a top priority:
+
+- All video processing happens locally in your browser
+- No video data is ever sent to any server
+- No data is stored between sessions
+- Works offline after initial load
+
+## Performance Considerations
+
+The application is optimized for different hardware capabilities:
+
+- Adaptive frame rate based on device performance
+- Resolution monitoring and warnings
+- Processing paused when tab is inactive
+- WebGL acceleration when available
+
+## Development
+
+### Prerequisites
+
+- Node.js 16+
+- npm or yarn
+
+### Installation
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Run tests
+npm test
+
+# Build for production
+npm run build
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+### Testing
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+The application includes unit tests for core functionality using Vitest.
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+## Browser Compatibility
+
+- Chrome 83+
+- Firefox 76+
+- Safari 14+
+- Edge 83+
+
+## License
+
+MIT
