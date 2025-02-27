@@ -20,8 +20,8 @@ import './CameraFeed.css';
                                                                                                                                                         
    const [videoConstraints] = useState<MediaTrackConstraints>({                                                                                         
      facingMode: 'user',                                                                                                                                
-     width: 640,                                                                                                                                        
-     height: 480                                                                                                                                        
+     width: { ideal: 640 },                                                                                                                                        
+     height: { ideal: 480 }                                                                                                                                      
    });                                                                                                                                                  
                                                                                                                                                         
    const toggleWebcam = useCallback(() => {                                                                                                             
@@ -164,7 +164,9 @@ import './CameraFeed.css';
    slouchLevel: number;                                                                                                                                 
    shoulderAlignment: number;                                                                                                                           
    criticalPoints: Array<[number, number]>;                                                                                                             
- }                                                                                                                                                      
+ } 
+ 
+ export default CameraFeed;
                                                                                                                                                         
  // Example typed analysis function                                                                                                                     
  const analyzePosture = (frame: ImageData): PostureAnalysisResult => {                                                                                  
