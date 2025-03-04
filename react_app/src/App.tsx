@@ -107,6 +107,21 @@ function App() {
       )}
 
       <CameraFeed />
+
+      <button                                                                                                                                                                                          
+          onClick={() => notificationService.notifyBadPosture('Test notification')}                                                                                                                      
+          style={{                                                                                                                                                                                       
+            padding: '10px 20px',                                                                                                                                                                        
+            margin: '20px 0',                                                                                                                                                                            
+            backgroundColor: '#4285f4',                                                                                                                                                                  
+            color: 'white',                                                                                                                                                                              
+            border: 'none',                                                                                                                                                                              
+            borderRadius: '4px',                                                                                                                                                                         
+            cursor: 'pointer'                                                                                                                                                                            
+      }}                                                                                                                                                                                             
+        >                                                                                                                                                                                                
+          Test Notification                                                                                                                                                                              
+        </button> 
       
       <footer className="app-footer">
         <p>
