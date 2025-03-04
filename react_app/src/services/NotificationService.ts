@@ -47,37 +47,47 @@ class NotificationService {
     this.notificationCooldown = milliseconds;
   }
 
-  public notifyBadPosture(message: string = 'Your posture needs correction!'): void {
-    if (!this.notificationEnabled || !this.hasPermission) {
-      return;
-    }
-
-    const now = Date.now();
-    if (now - this.lastNotificationTime < this.notificationCooldown) {
-      return; // Still in cooldown period
-    }
-
-    this.lastNotificationTime = now;
-
-    try {
-      const notification = new Notification('Posture Alert', {
-        body: message,
-        icon: '/posture-icon.png', // You'll need to add this icon
-        silent: false
-      });
-
-      // Auto close after 5 seconds
-      setTimeout(() => notification.close(), 5000);
-    } catch (error) {
-      console.error('Error showing notification:', error);
-    }
-  }
-
+  public notifyBadPosture(message: string = 'Your posture needs correction!'): void {                                                                                                              
+    console.log("Notification called");                                                                                                                                                            
+                                                                                                                                                                                                   
+    if (!this.notificationEnabled || !this.hasPermission) {                                                                                                                                        
+      console.log("Notification or permission not enabled");                                                                                                                                       
+      return;                                                                                                                                                                                      
+    }                                                                                                                                                                                              
+                                                                                                                                                                                                   
+    try {                                                                                                                                                                                          
+      console.log("Creating notification");                                                                                                                                                        
+      const notification = new Notification('POSTURE ALERT - TEST', {                                                                                                                              
+        body: message + ' ' + new Date().toLocaleTimeString(),                                                                                                                                     
+        icon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="50" height="50"><circle cx="50" cy="50" r="40" stroke="red" stroke-width="4" fill="yellow" /></svg>',                                                                                                                                                                         
+        requireInteraction: true, // This makes the notification stay until user interacts with it                                                                                                 
+        silent: false                                                                                                                                                                              
+      });                                                                                                                                                                                          
+                                                                                                                                                                                                   
+      console.log("Created notification");                                                                                                                                                         
+                                                                                                                                                                                                   
+      notification.onshow = () => console.log("Notification shown at", new Date().toLocaleTimeString());                                                                                           
+      notification.onclick = () => console.log("Notification clicked");                                                                                                                            
+      notification.onclose = () => console.log("Notification closed");                                                                                                                             
+      notification.onerror = (e) => console.error("Notification error:", e);                                                                                                                       
+                                                                                                                                                                                                   
+      // Keep notification longer                                                                                                                                                                  
+      setTimeout(() => {                                                                                                                                                                           
+        console.log("Closing notification");                                                                                                                                                       
+        notification.close();                                                                                                                                                                      
+      }, 10000);                                                                                                                                                                                   
+    } catch (error) {                                                                                                                                                                              
+      console.error('Error showing notification:', error);                                                                                                                                         
+    }                                                                                                                                                                                              
+  }      
   public async notifyPostureStatus(status: PostureStatus, duration: number): Promise<void> {
-    if (status === PostureStatus.BAD && duration > 30) { // Only notify if bad posture for > 30 seconds
+    console.log(`Posture status: ${status}, Duration: ${duration}s, Permission: ${Notification.permission}`);
+
+    if (status === PostureStatus.BAD && duration > 5 && Math.floor(duration) % 10 === 0)
+      console.log('Attempting to send notification'); 
       this.notifyBadPosture(`You've had poor posture for ${Math.floor(duration)} seconds. Take a break!`);
     }
-  }
+  
 }
 
 // Create singleton instance
