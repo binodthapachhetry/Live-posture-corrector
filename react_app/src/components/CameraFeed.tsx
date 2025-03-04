@@ -68,9 +68,36 @@ const CameraFeed = () => {
   }, []);
 
   // Toggle webcam on/off
-  const toggleWebcam = useCallback(() => {
-    setIsWebcamOn(prev => !prev);
-  }, []);
+  const toggleWebcam = useCallback(async () => {
+    try {
+      if (!isWebcamOn) {
+        // Reset error state when starting
+        setError(null);
+        
+        // Verify webcam access
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: videoConstraints
+        });
+        
+        // Check if we got the requested resolution
+        const settings = stream.getVideoTracks()[0].getSettings();
+        if (settings.width && settings.height) {
+          setActualResolution({
+            width: settings.width,
+            height: settings.height
+          });
+        }
+        
+        // Clean up stream when done
+        stream.getTracks().forEach(track => track.stop());
+      }
+      
+      setIsWebcamOn(prev => !prev);
+    } catch (err) {
+      setError(err.message);
+      setIsWebcamOn(false);
+    }
+  }, [isWebcamOn, videoConstraints]);
 
   // Check aspect ratio of camera feed
   const checkAspectRatio = (w: number, h: number) => {

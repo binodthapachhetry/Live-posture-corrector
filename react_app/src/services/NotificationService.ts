@@ -3,11 +3,35 @@ import { PostureStatus } from '../types/posture';
 class NotificationService {
   private hasPermission: boolean = false;
   private lastNotificationTime: number = 0;
-  private notificationCooldown: number = 60000; // 1 minute cooldown between notifications
+  private notificationCooldown: number = 60000;
   private notificationEnabled: boolean = true;
+  private notificationChannel: BroadcastChannel | null = null;
+  private tabId: string = crypto.randomUUID();
 
   constructor() {
     this.checkPermission();
+    this.setupCrossTabSync();
+  }
+
+  private setupCrossTabSync() {
+    if ('BroadcastChannel' in window) {
+      this.notificationChannel = new BroadcastChannel('posture-notifications');
+      this.notificationChannel.onmessage = (event) => {
+        if (event.data.tabId !== this.tabId && event.data.type === 'notification') {
+          this.lastNotificationTime = event.data.timestamp;
+        }
+      };
+    }
+  }
+
+  private broadcastNotification() {
+    if (this.notificationChannel) {
+      this.notificationChannel.postMessage({
+        type: 'notification',
+        tabId: this.tabId,
+        timestamp: Date.now()
+      });
+    }
   }
 
   private async checkPermission(): Promise<void> {
