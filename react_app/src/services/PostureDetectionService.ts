@@ -1,11 +1,18 @@
 import * as tf from '@tensorflow/tfjs';
 import * as poseDetection from '@tensorflow-models/pose-detection';
-import { PostureAnalysisResult } from '../types/posture';
+import { PostureAnalysisResult, PostureSettings } from '../types/posture';
 
 class PostureDetectionService {
   private model: poseDetection.PoseDetector | null = null;
   private modelLoading: boolean = false;
   private modelReady: boolean = false;
+  
+  // Default posture settings
+  private postureSettings: PostureSettings = {
+    shoulderAlignmentThreshold: 15, // pixels
+    slouchAngleThreshold: 20, // degrees
+    minPoseConfidence: 0.25
+  };
   
   // Configuration for MoveNet model (best balance of accuracy and performance)
   private readonly modelConfig: poseDetection.MoveNetModelConfig = {
@@ -62,7 +69,12 @@ class PostureDetectionService {
     return poses;
   }
 
-  analyzePosture(poses: poseDetection.Pose[]): PostureAnalysisResult {
+  analyzePosture(poses: poseDetection.Pose[], settings?: Partial<PostureSettings>): PostureAnalysisResult {
+    // Apply any custom settings passed in
+    const currentSettings = {
+      ...this.postureSettings,
+      ...(settings || {})
+    };
     if (!poses.length) {
       return {
         slouchLevel: 0,
@@ -114,9 +126,9 @@ class PostureDetectionService {
     // Average the two angles
     const slouchLevel = (leftSlouchAngle + rightSlouchAngle) / 2;
     
-    // Determine if posture is good
-    const isShoulderAligned = shoulderAlignment < 15; // threshold in pixels
-    const isNotSlouchedForward = slouchLevel < 20; // threshold in degrees
+    // Determine if posture is good using configurable thresholds
+    const isShoulderAligned = shoulderAlignment < currentSettings.shoulderAlignmentThreshold;
+    const isNotSlouchedForward = slouchLevel < currentSettings.slouchAngleThreshold;
     const isGoodPosture = isShoulderAligned && isNotSlouchedForward;
     
     // Generate feedback
@@ -151,6 +163,19 @@ class PostureDetectionService {
   
   isModelReady(): boolean {
     return this.modelReady;
+  }
+  
+  // Method to update posture settings
+  updateSettings(settings: Partial<PostureSettings>): void {
+    this.postureSettings = {
+      ...this.postureSettings,
+      ...settings
+    };
+  }
+  
+  // Method to get current settings
+  getSettings(): PostureSettings {
+    return { ...this.postureSettings };
   }
 }
 
