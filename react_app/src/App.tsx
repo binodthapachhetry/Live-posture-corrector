@@ -138,7 +138,11 @@ function App() {
           
           <div className="setting-group">
             <button
-              onClick={handleRecalibrate}
+              onClick={() => {
+                console.log('Recalibrate button clicked');
+                postureDetectionService.clearCalibrationData();
+                setShowCalibration(true);
+              }}
               style={{
                 padding: '8px 16px',
                 backgroundColor: '#4285f4',
@@ -146,7 +150,10 @@ function App() {
                 border: 'none',
                 borderRadius: '4px',
                 cursor: 'pointer',
-                marginTop: '10px'
+                marginTop: '10px',
+                position: 'relative',
+                zIndex: 10,
+                pointerEvents: 'auto'
               }}
             >
               Recalibrate Posture
@@ -169,7 +176,10 @@ function App() {
 
       <CalibrationModal 
         isOpen={showCalibration}
-        onClose={() => setShowCalibration(false)}
+        onClose={() => {
+          console.log('Closing calibration modal');
+          setShowCalibration(false);
+        }}
         onCalibrationComplete={handleCalibrationComplete}
       />
 
