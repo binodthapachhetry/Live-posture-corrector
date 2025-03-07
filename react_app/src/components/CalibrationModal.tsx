@@ -169,8 +169,8 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({
   if (!isOpen) return null;
   
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-lg w-full">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style={{ pointerEvents: 'auto' }}>
+      <div className="bg-white rounded-lg p-6 max-w-lg w-full" style={{ pointerEvents: 'auto' }}>
         <h2 className="text-xl font-bold mb-4">Posture Calibration</h2>
         
         {error && (
@@ -204,22 +204,19 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({
                 className="absolute inset-0 w-full h-full object-cover"
                 style={{ opacity: 0, position: 'absolute' }}
               />
-              <canvas 
-                ref={canvasRef} 
-                className="absolute inset-0 w-full h-full object-cover"
-                style={{ opacity: 0, position: 'absolute' }}
-              />
             </div>
             <div className="flex justify-between">
               <button
                 onClick={onClose}
                 className="px-4 py-2 bg-gray-200 rounded"
+                style={{ position: 'relative', zIndex: 10, pointerEvents: 'auto' }}
               >
                 Cancel
               </button>
               <button
                 onClick={startCalibration}
                 className="px-4 py-2 bg-blue-500 text-white rounded"
+                style={{ position: 'relative', zIndex: 10, pointerEvents: 'auto' }}
               >
                 Start Calibration
               </button>

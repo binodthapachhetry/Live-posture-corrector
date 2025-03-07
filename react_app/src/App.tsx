@@ -172,7 +172,10 @@ function App() {
             color: 'white',                                                                                                                                                                              
             border: 'none',                                                                                                                                                                              
             borderRadius: '4px',                                                                                                                                                                         
-            cursor: 'pointer'                                                                                                                                                                            
+            cursor: 'pointer',
+            position: 'relative',
+            zIndex: 5,
+            pointerEvents: 'auto'                                                                                                                                                                            
       }}                                                                                                                                                                                             
         >                                                                                                                                                                                                
           Test Notification                                                                                                                                                                              
