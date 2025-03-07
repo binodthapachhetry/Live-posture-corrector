@@ -9,6 +9,7 @@ import { PostureSettings } from './types/posture';
 function App() {
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [showCalibration, setShowCalibration] = useState<boolean>(false);
+  const [isCalibrated, setIsCalibrated] = useState<boolean>(false);
   const [settings, setSettings] = useState<PostureSettings>({
     shoulderAlignmentThreshold: 15,
     slouchThreshold: 20,
@@ -29,7 +30,10 @@ function App() {
         }
       }
       
-      if (postureDetectionService.isCalibrationNeeded()) {
+      const needsCalibration = postureDetectionService.isCalibrationNeeded();
+      setIsCalibrated(!needsCalibration);
+      
+      if (needsCalibration) {
         setShowCalibration(true);
       }
     };
@@ -62,18 +66,21 @@ function App() {
 
   const handleCalibrationComplete = () => {
     setShowCalibration(false);
+    setIsCalibrated(true);
   };
 
   return (
     <div className="app-container">
       <header className="app-header">
         <h1>Posture Analysis App</h1>
-        <button 
-          className="settings-toggle"
-          onClick={toggleSettings}
-        >
-          {showSettings ? 'Hide Settings' : 'Settings'}
-        </button>
+        {isCalibrated && (
+          <button 
+            className="settings-toggle"
+            onClick={toggleSettings}
+          >
+            {showSettings ? 'Hide Settings' : 'Settings'}
+          </button>
+        )}
       </header>
 
       {showSettings && (
@@ -155,7 +162,10 @@ function App() {
         </div>
       )}
 
-      <CameraFeed onCalibrationNeeded={() => setShowCalibration(true)} />
+      <CameraFeed 
+        onCalibrationNeeded={() => setShowCalibration(true)} 
+        isCalibrated={isCalibrated}
+      />
 
       <CalibrationModal 
         isOpen={showCalibration}
@@ -163,7 +173,8 @@ function App() {
         onCalibrationComplete={handleCalibrationComplete}
       />
 
-      <button                                                                                                                                                                                          
+      {isCalibrated && (
+        <button                                                                                                                                                                                          
           onClick={() => notificationService.notifyBadPosture('Test notification')}                                                                                                                      
           style={{                                                                                                                                                                                       
             padding: '10px 20px',                                                                                                                                                                        
@@ -176,10 +187,11 @@ function App() {
             position: 'relative',
             zIndex: 5,
             pointerEvents: 'auto'                                                                                                                                                                            
-      }}                                                                                                                                                                                             
+          }}                                                                                                                                                                                             
         >                                                                                                                                                                                                
           Test Notification                                                                                                                                                                              
-        </button> 
+        </button>
+      )}
       
       <footer className="app-footer">
         <p>

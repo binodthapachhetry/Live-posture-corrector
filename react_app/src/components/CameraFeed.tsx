@@ -9,9 +9,10 @@ import { PostureAnalysisResult, PostureStatus } from '../types/posture';
 
 interface CameraFeedProps {
   onCalibrationNeeded?: () => void;
+  isCalibrated: boolean;
 }
 
-const CameraFeed = ({ onCalibrationNeeded }: CameraFeedProps) => {
+const CameraFeed = ({ onCalibrationNeeded, isCalibrated }: CameraFeedProps) => {
   const [isWebcamOn, setIsWebcamOn] = useState<boolean>(false);
   const [actualResolution, setActualResolution] = useState<{width: number, height: number}>({width: 0, height: 0});
   const [fps, setFps] = useState<number>(0);
@@ -238,13 +239,15 @@ const CameraFeed = ({ onCalibrationNeeded }: CameraFeedProps) => {
       </div>
       
       <div className="controls">
-        <button 
-          onClick={toggleWebcam} 
-          className={`webcam-toggle ${isWebcamOn ? 'active' : ''}`}
-          disabled={modelLoading}
-        >
-          {isWebcamOn ? 'Stop Webcam' : 'Start Webcam'}
-        </button>
+        {isCalibrated && (
+          <button 
+            onClick={toggleWebcam} 
+            className={`webcam-toggle ${isWebcamOn ? 'active' : ''}`}
+            disabled={modelLoading}
+          >
+            {isWebcamOn ? 'Stop Webcam' : 'Start Webcam'}
+          </button>
+        )}
         
         {modelLoading && (
           <div className="loading-indicator">
@@ -269,30 +272,6 @@ const CameraFeed = ({ onCalibrationNeeded }: CameraFeedProps) => {
 
       <canvas ref={canvasRef} width={640} height={480} hidden />
       
-      <div className="camera-metrics">
-        <div className="metric">
-          📏 Resolution: {actualResolution.width}x{actualResolution.height}
-          {aspectWarning && <span className="metric-warning"> (Aspect mismatch!)</span>}
-        </div>
-        <div className="metric">
-          🎞️ FPS: {fps}
-          {fps > 0 && fps < 24 && <span className="metric-warning"> (Low frame rate)</span>}
-        </div>
-        <div className="metric">
-          ⚙️ Target: 640x480 @ 30FPS
-        </div>
-        {postureStatus !== PostureStatus.UNKNOWN && (
-          <div className="metric">
-            🧍 Posture: 
-            <span className={`posture-status ${postureStatus}`}>
-              {postureStatus === PostureStatus.GOOD ? 'Good' : 'Needs Correction'}
-            </span>
-            {postureStatus === PostureStatus.BAD && badPostureDuration > 5 && (
-              <span className="metric-warning"> ({Math.floor(badPostureDuration)}s)</span>
-            )}
-          </div>
-        )}
-      </div>
       
       {!isTabVisible && isWebcamOn && (
         <div className="tab-inactive-notice">
