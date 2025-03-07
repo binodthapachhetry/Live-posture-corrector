@@ -40,6 +40,13 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({
     };
   }, [isOpen]);
   
+  // Ensure video element is properly connected to stream when step changes
+  useEffect(() => {
+    if (step === 2 && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [step]);
+  
   // Handle countdown for calibration
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -92,18 +99,25 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({
         throw new Error('Video or canvas reference not available');
       }
       
+      // Make sure video is playing and has dimensions
+      if (videoRef.current.videoWidth === 0 || videoRef.current.videoHeight === 0) {
+        console.log('Video dimensions not available, waiting...');
+        // Short delay to ensure video is ready
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
       // Capture current frame
       const context = canvasRef.current.getContext('2d');
       if (!context) throw new Error('Could not get canvas context');
       
-      canvasRef.current.width = videoRef.current.videoWidth;
-      canvasRef.current.height = videoRef.current.videoHeight;
+      canvasRef.current.width = videoRef.current.videoWidth || 640;
+      canvasRef.current.height = videoRef.current.videoHeight || 480;
       
       context.drawImage(
         videoRef.current, 
         0, 0, 
-        videoRef.current.videoWidth, 
-        videoRef.current.videoHeight
+        canvasRef.current.width, 
+        canvasRef.current.height
       );
       
       const imageData = context.getImageData(
@@ -165,6 +179,7 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({
                 playsInline 
                 muted 
                 className="absolute inset-0 w-full h-full object-cover"
+                style={{ display: 'block' }}
               />
               <canvas 
                 ref={canvasRef} 
@@ -200,6 +215,7 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({
                 playsInline 
                 muted 
                 className="absolute inset-0 w-full h-full object-cover"
+                style={{ display: 'block' }}
               />
             </div>
             <div className="flex justify-center">
