@@ -95,39 +95,57 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({
     setError(null);
     
     try {
-      if (!videoRef.current || !canvasRef.current) {
-        throw new Error('Video or canvas reference not available');
+      if (!videoRef.current) {
+        throw new Error('Video reference not available');
       }
       
       // Make sure video is playing and has dimensions
       if (videoRef.current.videoWidth === 0 || videoRef.current.videoHeight === 0) {
         console.log('Video dimensions not available, waiting...');
         // Short delay to ensure video is ready
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
       
-      // Capture current frame
-      const context = canvasRef.current.getContext('2d');
+      // Create a temporary canvas if the ref isn't available
+      const canvas = canvasRef.current || document.createElement('canvas');
+      const context = canvas.getContext('2d');
       if (!context) throw new Error('Could not get canvas context');
       
-      canvasRef.current.width = videoRef.current.videoWidth || 640;
-      canvasRef.current.height = videoRef.current.videoHeight || 480;
+      // Set canvas dimensions to match video
+      canvas.width = videoRef.current.videoWidth || 640;
+      canvas.height = videoRef.current.videoHeight || 480;
       
+      console.log('Capturing frame for calibration', {
+        videoWidth: videoRef.current.videoWidth,
+        videoHeight: videoRef.current.videoHeight,
+        canvasWidth: canvas.width,
+        canvasHeight: canvas.height
+      });
+      
+      // Draw the current video frame to the canvas
       context.drawImage(
         videoRef.current, 
         0, 0, 
-        canvasRef.current.width, 
-        canvasRef.current.height
+        canvas.width, 
+        canvas.height
       );
       
+      // Get the image data from the canvas
       const imageData = context.getImageData(
         0, 0, 
-        canvasRef.current.width, 
-        canvasRef.current.height
+        canvas.width, 
+        canvas.height
       );
+      
+      console.log('Calibrating with image data', {
+        width: imageData.width,
+        height: imageData.height
+      });
       
       // Perform calibration
       const success = await postureDetectionService.calibrate(imageData);
+      
+      console.log('Calibration result:', success);
       
       if (success) {
         setStep(3); // Success step
@@ -183,7 +201,13 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({
               />
               <canvas 
                 ref={canvasRef} 
-                className="absolute inset-0 w-full h-full object-cover opacity-0"
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ opacity: 0, position: 'absolute' }}
+              />
+              <canvas 
+                ref={canvasRef} 
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ opacity: 0, position: 'absolute' }}
               />
             </div>
             <div className="flex justify-between">
