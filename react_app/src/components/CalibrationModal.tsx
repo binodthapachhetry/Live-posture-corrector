@@ -24,6 +24,10 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       initCamera();
+      // Reset to step 1 whenever the modal opens
+      setStep(1);
+      setCountdown(5);
+      setError(null);
     } else {
       // Clean up when modal closes
       if (streamRef.current) {
