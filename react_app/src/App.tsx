@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 import CameraFeed from './components/CameraFeed';
+import CalibrationModal from './components/CalibrationModal';
 import notificationService from './services/NotificationService';
+import postureDetectionService from './services/PostureDetectionService';
 import { PostureSettings } from './types/posture';
 
 function App() {
   const [showSettings, setShowSettings] = useState<boolean>(false);
+  const [showCalibration, setShowCalibration] = useState<boolean>(false);
   const [settings, setSettings] = useState<PostureSettings>({
     shoulderAlignmentThreshold: 15,
     slouchThreshold: 20,
@@ -13,6 +16,26 @@ function App() {
     enableNotifications: true,
     notificationInterval: 60000 // 1 minute
   });
+
+  // Check if calibration is needed on startup
+  useEffect(() => {
+    const checkCalibration = async () => {
+      // Wait for model to be ready before checking calibration
+      if (!postureDetectionService.isModelReady()) {
+        try {
+          await postureDetectionService.loadModel();
+        } catch (error) {
+          console.error('Failed to load model:', error);
+        }
+      }
+      
+      if (postureDetectionService.isCalibrationNeeded()) {
+        setShowCalibration(true);
+      }
+    };
+    
+    checkCalibration();
+  }, []);
 
   const toggleSettings = () => {
     setShowSettings(prev => !prev);
@@ -30,6 +53,15 @@ function App() {
     } else if (key === 'notificationInterval') {
       notificationService.setCooldown(value as number);
     }
+  };
+
+  const handleRecalibrate = () => {
+    postureDetectionService.clearCalibrationData();
+    setShowCalibration(true);
+  };
+
+  const handleCalibrationComplete = () => {
+    setShowCalibration(false);
   };
 
   return (
@@ -97,6 +129,23 @@ function App() {
             <span>{(settings.detectionConfidence * 100).toFixed(0)}%</span>
           </div>
           
+          <div className="setting-group">
+            <button
+              onClick={handleRecalibrate}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#4285f4',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                marginTop: '10px'
+              }}
+            >
+              Recalibrate Posture
+            </button>
+          </div>
+          
           <div className="setting-info">
             <p>
               <strong>Privacy Note:</strong> All processing happens locally on your device.
@@ -106,7 +155,13 @@ function App() {
         </div>
       )}
 
-      <CameraFeed />
+      <CameraFeed onCalibrationNeeded={() => setShowCalibration(true)} />
+
+      <CalibrationModal 
+        isOpen={showCalibration}
+        onClose={() => setShowCalibration(false)}
+        onCalibrationComplete={handleCalibrationComplete}
+      />
 
       <button                                                                                                                                                                                          
           onClick={() => notificationService.notifyBadPosture('Test notification')}                                                                                                                      

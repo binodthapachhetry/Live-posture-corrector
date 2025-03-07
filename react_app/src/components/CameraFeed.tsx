@@ -7,7 +7,11 @@ import notificationService from '../services/NotificationService';
 import PostureOverlay from './PostureOverlay';
 import { PostureAnalysisResult, PostureStatus } from '../types/posture';
 
-const CameraFeed = () => {
+interface CameraFeedProps {
+  onCalibrationNeeded?: () => void;
+}
+
+const CameraFeed = ({ onCalibrationNeeded }: CameraFeedProps) => {
   const [isWebcamOn, setIsWebcamOn] = useState<boolean>(false);
   const [actualResolution, setActualResolution] = useState<{width: number, height: number}>({width: 0, height: 0});
   const [fps, setFps] = useState<number>(0);
@@ -39,6 +43,11 @@ const CameraFeed = () => {
         setModelLoading(true);
         await postureDetectionService.loadModel();
         setModelReady(true);
+        
+        // Check if calibration is needed when model is ready
+        if (postureDetectionService.isCalibrationNeeded() && onCalibrationNeeded) {
+          onCalibrationNeeded();
+        }
       } catch (err) {
         console.error('Failed to load posture detection model:', err);
         setError('Failed to load posture detection model. Please refresh the page.');
@@ -65,7 +74,7 @@ const CameraFeed = () => {
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [onCalibrationNeeded]);
 
   // Toggle webcam on/off
   const toggleWebcam = useCallback(async () => {
