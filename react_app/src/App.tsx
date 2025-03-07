@@ -84,7 +84,7 @@ function App() {
         )}
       </header>
 
-      {showSettings && (
+      {isCalibrated && showSettings && (
         <div className="settings-panel">
           <h2>Settings</h2>
           
@@ -144,6 +144,7 @@ function App() {
                 postureDetectionService.clearCalibrationData();
                 setIsCalibrated(false); // Update calibration state
                 setShowCalibration(true);
+                setShowSettings(false); // Hide settings panel during recalibration
               }}
               style={{
                 padding: '8px 16px',
