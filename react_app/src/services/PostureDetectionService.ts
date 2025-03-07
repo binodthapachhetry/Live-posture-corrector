@@ -1,6 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
 import * as poseDetection from '@tensorflow-models/pose-detection';
-import { PostureAnalysisResult, PostureSettings } from '../types/posture';
+import { PostureAnalysisResult, PostureSettings, CalibrationData } from '../types/posture';
 
 class PostureDetectionService {
   private model: poseDetection.PoseDetector | null = null;
@@ -14,6 +14,11 @@ class PostureDetectionService {
     minPoseConfidence: 0.25
   };
   
+  // Calibration data
+  private calibrationData: CalibrationData | null = null;
+  private calibrationTimestamp: number = 0;
+  private readonly CALIBRATION_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
+  
   // Configuration for MoveNet model (best balance of accuracy and performance)
   private readonly modelConfig: poseDetection.MoveNetModelConfig = {
     modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
@@ -25,6 +30,9 @@ class PostureDetectionService {
     // Initialize TensorFlow.js
     tf.env().set('WEBGL_CPU_FORWARD', false);
     tf.env().set('WEBGL_PACK', true);
+    
+    // Load any saved calibration data
+    this.loadCalibrationData();
   }
 
   async loadModel(): Promise<void> {
@@ -71,10 +79,15 @@ class PostureDetectionService {
 
   analyzePosture(poses: poseDetection.Pose[], settings?: Partial<PostureSettings>): PostureAnalysisResult {
     // Apply any custom settings passed in
-    const currentSettings = {
+    let currentSettings = {
       ...this.postureSettings,
       ...(settings || {})
     };
+    
+    // Apply calibration-based settings if available
+    if (this.calibrationData) {
+      currentSettings = this.generateSettingsFromCalibration(currentSettings);
+    }
     if (!poses.length) {
       return {
         slouchLevel: 0,
@@ -176,6 +189,164 @@ class PostureDetectionService {
   // Method to get current settings
   getSettings(): PostureSettings {
     return { ...this.postureSettings };
+  }
+  
+  // Calibration methods
+  
+  /**
+   * Checks if calibration is needed based on various triggers
+   */
+  isCalibrationNeeded(): boolean {
+    // No calibration data exists
+    if (!this.calibrationData) {
+      return true;
+    }
+    
+    // Calibration data is too old
+    const now = Date.now();
+    if (now - this.calibrationTimestamp > this.CALIBRATION_EXPIRY_MS) {
+      return true;
+    }
+    
+    return false;
+  }
+  
+  /**
+   * Performs calibration using the current pose
+   */
+  async calibrate(imageData: ImageData): Promise<boolean> {
+    try {
+      const poses = await this.detectPose(imageData);
+      
+      if (!poses || poses.length === 0 || !poses[0].keypoints) {
+        throw new Error('No valid pose detected for calibration');
+      }
+      
+      this.saveCalibrationData(poses[0]);
+      return true;
+    } catch (error) {
+      console.error('Calibration failed:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Saves reference pose as calibration data
+   */
+  private saveCalibrationData(pose: poseDetection.Pose): void {
+    if (!pose || !pose.keypoints || pose.keypoints.length === 0) {
+      throw new Error('Invalid pose data for calibration');
+    }
+    
+    // Extract key body points
+    const keypoints = pose.keypoints;
+    const leftShoulder = keypoints.find(kp => kp.name === 'left_shoulder');
+    const rightShoulder = keypoints.find(kp => kp.name === 'right_shoulder');
+    const leftEar = keypoints.find(kp => kp.name === 'left_ear');
+    const rightEar = keypoints.find(kp => kp.name === 'right_ear');
+    const nose = keypoints.find(kp => kp.name === 'nose');
+    
+    if (!leftShoulder || !rightShoulder || !leftEar || !rightEar || !nose) {
+      throw new Error('Missing key body points for calibration');
+    }
+    
+    // Calculate reference values
+    const shoulderAlignment = Math.abs(leftShoulder.y - rightShoulder.y);
+    
+    // Calculate ear-shoulder angles for slouch detection
+    const leftSlouchAngle = calculateAngle(
+      leftEar.x, leftEar.y,
+      leftShoulder.x, leftShoulder.y,
+      leftShoulder.x + 10, leftShoulder.y
+    );
+    
+    const rightSlouchAngle = calculateAngle(
+      rightEar.x, rightEar.y,
+      rightShoulder.x, rightShoulder.y,
+      rightShoulder.x + 10, rightShoulder.y
+    );
+    
+    // Store calibration data
+    this.calibrationData = {
+      referenceShoulderAlignment: shoulderAlignment,
+      referenceLeftSlouchAngle: leftSlouchAngle,
+      referenceRightSlouchAngle: rightSlouchAngle,
+      referenceKeypoints: {
+        leftShoulder: { x: leftShoulder.x, y: leftShoulder.y },
+        rightShoulder: { x: rightShoulder.x, y: rightShoulder.y },
+        leftEar: { x: leftEar.x, y: leftEar.y },
+        rightEar: { x: rightEar.x, y: rightEar.y },
+        nose: { x: nose.x, y: nose.y }
+      }
+    };
+    
+    this.calibrationTimestamp = Date.now();
+    
+    // Save to localStorage
+    localStorage.setItem('postureCalibrationData', JSON.stringify(this.calibrationData));
+    localStorage.setItem('postureCalibrationTimestamp', this.calibrationTimestamp.toString());
+    
+    console.log('Calibration data saved successfully', this.calibrationData);
+  }
+  
+  /**
+   * Loads calibration data from localStorage
+   */
+  private loadCalibrationData(): void {
+    try {
+      const savedData = localStorage.getItem('postureCalibrationData');
+      const savedTimestamp = localStorage.getItem('postureCalibrationTimestamp');
+      
+      if (savedData && savedTimestamp) {
+        this.calibrationData = JSON.parse(savedData);
+        this.calibrationTimestamp = parseInt(savedTimestamp, 10);
+      }
+    } catch (error) {
+      console.error('Error loading calibration data:', error);
+      this.clearCalibrationData();
+    }
+  }
+  
+  /**
+   * Forces recalibration by clearing existing data
+   */
+  clearCalibrationData(): void {
+    this.calibrationData = null;
+    this.calibrationTimestamp = 0;
+    localStorage.removeItem('postureCalibrationData');
+    localStorage.removeItem('postureCalibrationTimestamp');
+  }
+  
+  /**
+   * Generates recommended posture settings based on calibration
+   */
+  private generateSettingsFromCalibration(baseSettings: PostureSettings): PostureSettings {
+    if (!this.calibrationData) {
+      return baseSettings;
+    }
+    
+    // Calculate personalized thresholds based on calibration
+    // Add some tolerance to the calibrated values
+    const shoulderAlignmentThreshold = Math.max(
+      this.calibrationData.referenceShoulderAlignment * 1.5,
+      baseSettings.shoulderAlignmentThreshold * 0.7
+    );
+    
+    const avgSlouchAngle = (
+      this.calibrationData.referenceLeftSlouchAngle + 
+      this.calibrationData.referenceRightSlouchAngle
+    ) / 2;
+    
+    const slouchAngleThreshold = Math.max(
+      avgSlouchAngle * 1.3,
+      baseSettings.slouchAngleThreshold * 0.7
+    );
+    
+    return {
+      ...baseSettings,
+      shoulderAlignmentThreshold,
+      slouchAngleThreshold
+    };
   }
 }
 

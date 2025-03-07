@@ -8,10 +8,23 @@ export interface PostureAnalysisResult {
 
 export interface PostureSettings {
   shoulderAlignmentThreshold: number;
-  slouchThreshold: number;
-  detectionConfidence: number;
-  enableNotifications: boolean;
-  notificationInterval: number; // in milliseconds
+  slouchAngleThreshold: number;
+  minPoseConfidence: number;
+  enableNotifications?: boolean;
+  notificationInterval?: number; // in milliseconds
+}
+
+export interface CalibrationData {
+  referenceShoulderAlignment: number;
+  referenceLeftSlouchAngle: number;
+  referenceRightSlouchAngle: number;
+  referenceKeypoints: {
+    leftShoulder: { x: number, y: number };
+    rightShoulder: { x: number, y: number };
+    leftEar: { x: number, y: number };
+    rightEar: { x: number, y: number };
+    nose: { x: number, y: number };
+  };
 }
 
 export enum PostureStatus {
