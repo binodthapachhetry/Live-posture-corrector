@@ -136,8 +136,40 @@ class PostureDetectionService {
       rightShoulder.x + 10, rightShoulder.y // horizontal reference
     );
     
+    // Calculate vertical position of nose relative to shoulders
+    // This is a more reliable indicator of forward slouching
+    const shoulderMidpointY = (leftShoulder.y + rightShoulder.y) / 2;
+    const noseToShoulderY = nose.y - shoulderMidpointY;
+    
+    // In calibration, we store the reference nose-to-shoulder position
+    const referenceNoseToShoulderY = this.calibrationData ? 
+      (this.calibrationData.referenceKeypoints.nose.y - 
+       (this.calibrationData.referenceKeypoints.leftShoulder.y + 
+        this.calibrationData.referenceKeypoints.rightShoulder.y) / 2) : 0;
+    
+    // Calculate how much the nose has moved down relative to shoulders
+    // Positive values mean the nose is lower than in calibration (slouching forward)
+    const noseVerticalDeviation = this.calibrationData ? 
+      (noseToShoulderY - referenceNoseToShoulderY) : 0;
+    
+    // Combine the traditional angle-based slouch detection with the vertical position
     // Average the two angles
-    const slouchLevel = (leftSlouchAngle + rightSlouchAngle) / 2;
+    const slouchAngle = (leftSlouchAngle + rightSlouchAngle) / 2;
+    
+    // Combine both measures for a more robust slouch detection
+    // Weight the vertical deviation more heavily as it's more reliable
+    const slouchLevel = slouchAngle * 0.7 + (noseVerticalDeviation > 0 ? noseVerticalDeviation * 0.3 : 0);
+    
+    console.log('Slouch analysis:', {
+      leftSlouchAngle,
+      rightSlouchAngle,
+      avgSlouchAngle: slouchAngle,
+      noseToShoulderY,
+      referenceNoseToShoulderY,
+      noseVerticalDeviation,
+      combinedSlouchLevel: slouchLevel,
+      threshold: currentSettings.slouchAngleThreshold
+    });
     
     // Determine if posture is good using configurable thresholds
     const isShoulderAligned = shoulderAlignment < currentSettings.shoulderAlignmentThreshold;
@@ -423,11 +455,10 @@ class PostureDetectionService {
       this.calibrationData.referenceRightSlouchAngle
     ) / 2;
     
-    // Adaptive tolerance for slouch angle
-    // Smaller angles get proportionally larger tolerance
-    const slouchBaseMultiplier = 1.3; // Base multiplier
+    // Make slouch detection more sensitive by using a smaller multiplier
+    const slouchBaseMultiplier = 1.2; // Reduced from 1.3
     const slouchAdaptiveFactor = 
-      15 / (avgSlouchAngle + 10); // Adaptive factor
+      10 / (avgSlouchAngle + 10); // Adaptive factor (reduced from 15)
     
     const slouchAngleThreshold = Math.max(
       avgSlouchAngle * (slouchBaseMultiplier + slouchAdaptiveFactor),
