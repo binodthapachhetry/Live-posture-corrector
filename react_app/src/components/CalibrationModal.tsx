@@ -5,12 +5,14 @@ interface CalibrationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCalibrationComplete: () => void;
+  settings?: PostureSettings;
 }
 
 const CalibrationModal: React.FC<CalibrationModalProps> = ({ 
   isOpen, 
   onClose,
-  onCalibrationComplete 
+  onCalibrationComplete,
+  settings
 }) => {
   const [step, setStep] = useState<number>(1);
   const [countdown, setCountdown] = useState<number>(5);
@@ -260,6 +262,15 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({
               Your posture settings have been personalized based on your current posture.
               The system will now use this as a reference for detecting poor posture.
             </p>
+            <div className="mb-4 p-3 bg-gray-100 rounded">
+              <h3 className="font-bold mb-2">Calibration Tips:</h3>
+              <ul className="list-disc pl-5">
+                <li>The app will allow for natural movement around your calibrated posture</li>
+                <li>You'll receive notifications if you slouch or have uneven shoulders for too long</li>
+                <li>You can recalibrate anytime from the settings menu</li>
+                <li>For best results, calibrate in the same environment you'll be using the app</li>
+              </ul>
+            </div>
             <div className="flex justify-end">
               <button
                 onClick={handleComplete}

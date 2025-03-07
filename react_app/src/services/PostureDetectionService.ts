@@ -144,16 +144,22 @@ class PostureDetectionService {
     const isNotSlouchedForward = slouchLevel < currentSettings.slouchAngleThreshold;
     const isGoodPosture = isShoulderAligned && isNotSlouchedForward;
     
-    // Generate feedback
+    // Generate detailed feedback
     let feedback = "Your posture looks good!";
-    if (!isShoulderAligned) {
-      feedback = "Try to level your shoulders";
-    }
-    if (!isNotSlouchedForward) {
-      feedback = "You're slouching forward. Sit up straight!";
-    }
+    
     if (!isShoulderAligned && !isNotSlouchedForward) {
-      feedback = "Fix your posture: level shoulders and sit up straight";
+      // Both issues
+      feedback = "Fix your posture: level your shoulders and sit up straight";
+    } else if (!isShoulderAligned) {
+      // Only shoulder alignment issue
+      const higherSide = leftShoulder.y < rightShoulder.y ? "right" : "left";
+      feedback = `Your ${higherSide} shoulder is higher. Try to level your shoulders`;
+    } else if (!isNotSlouchedForward) {
+      // Only slouching issue
+      const severity = slouchLevel > currentSettings.slouchAngleThreshold * 1.5 
+        ? "significantly" 
+        : "slightly";
+      feedback = `You're ${severity} slouching forward. Sit up straight!`;
     }
     
     // Return critical points for visualization
@@ -222,12 +228,84 @@ class PostureDetectionService {
         throw new Error('No valid pose detected for calibration');
       }
       
+      // Validate the pose is suitable for calibration
+      const isValidPose = this.validatePoseForCalibration(poses[0]);
+      if (!isValidPose.valid) {
+        throw new Error(`Calibration failed: ${isValidPose.reason}`);
+      }
+      
       this.saveCalibrationData(poses[0]);
       return true;
     } catch (error) {
       console.error('Calibration failed:', error);
       return false;
     }
+  }
+  
+  /**
+   * Validates if a pose is suitable for calibration
+   */
+  private validatePoseForCalibration(pose: poseDetection.Pose): {valid: boolean, reason?: string} {
+    if (!pose || !pose.keypoints || pose.keypoints.length === 0) {
+      return { valid: false, reason: 'Invalid pose data' };
+    }
+    
+    // Extract key body points
+    const keypoints = pose.keypoints;
+    const leftShoulder = keypoints.find(kp => kp.name === 'left_shoulder');
+    const rightShoulder = keypoints.find(kp => kp.name === 'right_shoulder');
+    const leftEar = keypoints.find(kp => kp.name === 'left_ear');
+    const rightEar = keypoints.find(kp => kp.name === 'right_ear');
+    const nose = keypoints.find(kp => kp.name === 'nose');
+    
+    // Check if all required keypoints are detected with sufficient confidence
+    const requiredKeypoints = [leftShoulder, rightShoulder, leftEar, rightEar, nose];
+    const minConfidence = 0.5; // Minimum confidence for calibration
+    
+    for (const keypoint of requiredKeypoints) {
+      if (!keypoint) {
+        return { valid: false, reason: 'Missing required body points' };
+      }
+      
+      if (keypoint.score && keypoint.score < minConfidence) {
+        return { 
+          valid: false, 
+          reason: `Low confidence detection (${Math.round(keypoint.score * 100)}%). Please ensure good lighting and positioning.` 
+        };
+      }
+    }
+    
+    // Check if shoulders are reasonably level for calibration
+    if (leftShoulder && rightShoulder) {
+      const shoulderAlignment = Math.abs(leftShoulder.y - rightShoulder.y);
+      if (shoulderAlignment > 30) { // Arbitrary threshold for calibration
+        return { 
+          valid: false, 
+          reason: 'Shoulders are not level enough for calibration. Please sit straight.' 
+        };
+      }
+    }
+    
+    // Check if head is reasonably centered and upright
+    if (leftEar && rightEar && nose) {
+      const headTilt = Math.abs(leftEar.y - rightEar.y);
+      if (headTilt > 20) { // Arbitrary threshold for calibration
+        return { 
+          valid: false, 
+          reason: 'Head is tilted. Please keep your head level for calibration.' 
+        };
+      }
+      
+      // Check if nose is between ears (horizontally)
+      if (nose.x < Math.min(leftEar.x, rightEar.x) || nose.x > Math.max(leftEar.x, rightEar.x)) {
+        return { 
+          valid: false, 
+          reason: 'Please face the camera directly for calibration.' 
+        };
+      }
+    }
+    
+    return { valid: true };
   }
   
   /**
@@ -325,22 +403,51 @@ class PostureDetectionService {
       return baseSettings;
     }
     
-    // Calculate personalized thresholds based on calibration
-    // Add some tolerance to the calibrated values
+    // Calculate personalized thresholds based on calibration with adaptive tolerance
+    
+    // For shoulder alignment: use adaptive tolerance based on the reference value
+    // Smaller reference values get proportionally larger tolerance
+    const shoulderBaseMultiplier = 1.5; // Base multiplier
+    const shoulderAdaptiveFactor = 
+      10 / (this.calibrationData.referenceShoulderAlignment + 5); // Adaptive factor
+    
     const shoulderAlignmentThreshold = Math.max(
-      this.calibrationData.referenceShoulderAlignment * 1.5,
+      this.calibrationData.referenceShoulderAlignment * 
+        (shoulderBaseMultiplier + shoulderAdaptiveFactor),
       baseSettings.shoulderAlignmentThreshold * 0.7
     );
     
+    // For slouch angle: calculate average of left and right angles
     const avgSlouchAngle = (
       this.calibrationData.referenceLeftSlouchAngle + 
       this.calibrationData.referenceRightSlouchAngle
     ) / 2;
     
+    // Adaptive tolerance for slouch angle
+    // Smaller angles get proportionally larger tolerance
+    const slouchBaseMultiplier = 1.3; // Base multiplier
+    const slouchAdaptiveFactor = 
+      15 / (avgSlouchAngle + 10); // Adaptive factor
+    
     const slouchAngleThreshold = Math.max(
-      avgSlouchAngle * 1.3,
+      avgSlouchAngle * (slouchBaseMultiplier + slouchAdaptiveFactor),
       baseSettings.slouchAngleThreshold * 0.7
     );
+    
+    console.log('Generated personalized thresholds:', {
+      original: {
+        shoulderAlignment: this.calibrationData.referenceShoulderAlignment,
+        slouchAngle: avgSlouchAngle
+      },
+      thresholds: {
+        shoulderAlignment: shoulderAlignmentThreshold,
+        slouchAngle: slouchAngleThreshold
+      },
+      multipliers: {
+        shoulder: shoulderBaseMultiplier + shoulderAdaptiveFactor,
+        slouch: slouchBaseMultiplier + slouchAdaptiveFactor
+      }
+    });
     
     return {
       ...baseSettings,

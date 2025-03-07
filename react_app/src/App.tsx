@@ -195,6 +195,7 @@ function App() {
           setShowCalibration(false);
         }}
         onCalibrationComplete={handleCalibrationComplete}
+        settings={settings}
       />
 
       {isCalibrated && (
