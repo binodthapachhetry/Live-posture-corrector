@@ -141,10 +141,21 @@ function App() {
             <button
               onClick={() => {
                 console.log('Recalibrate button clicked');
+                
+                // Clear calibration data
                 postureDetectionService.clearCalibrationData();
-                setIsCalibrated(false); // Update calibration state
+                
+                // Update UI state
+                setIsCalibrated(false);
+                setShowSettings(false);
                 setShowCalibration(true);
-                setShowSettings(false); // Hide settings panel during recalibration
+                
+                // Pass a signal to CameraFeed to stop the webcam
+                if (typeof window !== 'undefined') {
+                  // Create a custom event to signal the camera to stop
+                  const event = new CustomEvent('stopWebcam');
+                  window.dispatchEvent(event);
+                }
               }}
               style={{
                 padding: '8px 16px',

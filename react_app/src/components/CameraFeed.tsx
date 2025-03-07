@@ -213,6 +213,25 @@ const CameraFeed = ({ onCalibrationNeeded, isCalibrated }: CameraFeedProps) => {
       cancelAnimationFrame(animationFrameRef.current);
     };
   }, [isWebcamOn, processFrame]);
+  
+  // Listen for external stop webcam requests
+  useEffect(() => {
+    const handleStopWebcam = () => {
+      if (isWebcamOn) {
+        setIsWebcamOn(false);
+        cancelAnimationFrame(animationFrameRef.current);
+        setPostureStatus(PostureStatus.UNKNOWN);
+        setBadPostureDuration(0);
+        badPostureStartTimeRef.current = null;
+      }
+    };
+    
+    window.addEventListener('stopWebcam', handleStopWebcam);
+    
+    return () => {
+      window.removeEventListener('stopWebcam', handleStopWebcam);
+    };
+  }, [isWebcamOn]);
 
   return (
     <div className="camera-feed">
