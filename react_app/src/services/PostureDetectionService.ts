@@ -260,7 +260,7 @@ class PostureDetectionService {
     
     // Check if all required keypoints are detected with sufficient confidence
     const requiredKeypoints = [leftShoulder, rightShoulder, leftEar, rightEar, nose];
-    const minConfidence = 0.5; // Minimum confidence for calibration
+    const minConfidence = 0.4; // Reduced from 0.5 to allow for more flexibility
     
     for (const keypoint of requiredKeypoints) {
       if (!keypoint) {
