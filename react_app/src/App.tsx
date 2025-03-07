@@ -61,6 +61,7 @@ function App() {
 
   const handleRecalibrate = () => {
     postureDetectionService.clearCalibrationData();
+    setIsCalibrated(false);
     setShowCalibration(true);
   };
 
@@ -141,6 +142,7 @@ function App() {
               onClick={() => {
                 console.log('Recalibrate button clicked');
                 postureDetectionService.clearCalibrationData();
+                setIsCalibrated(false); // Update calibration state
                 setShowCalibration(true);
               }}
               style={{
