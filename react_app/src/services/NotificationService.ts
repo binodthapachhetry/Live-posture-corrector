@@ -117,20 +117,37 @@ class NotificationService {
     this.lastNotificationTime = now;
     this.broadcastNotification();
     
-    // Always show in-app notification first
-    this.showInAppNotification(message);
+    // Only show in-app notification if the tab is focused
+    if (document.visibilityState === 'visible') {
+      this.showInAppNotification(message);
+    }
                                                                                                                                                                                                    
     // Then try system notification if we have permission
     if (Notification.permission === 'granted') {
       try {                                                                                                                                                                                          
-        console.log("Creating system notification");                                                                                                                                                        
+        console.log("Creating system notification");
+        
+        // Create a unique notification ID to prevent duplicates
+        const notificationId = `posture-${Date.now()}`;
+        
+        // Play a sound to alert the user (before creating notification)
+        try {
+          const audio = new Audio('data:audio/wav;base64,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');
+          audio.play().catch(e => console.log('Could not play notification sound', e));
+        } catch (e) {
+          console.log('Could not play notification sound', e);
+        }
+        
+        // Create the notification with options that maximize visibility
         const notification = new Notification('Posture Alert', {                                                                                                                              
           body: message + ' ' + new Date().toLocaleTimeString(),                                                                                                                                     
           icon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="50" height="50"><circle cx="50" cy="50" r="40" stroke="red" stroke-width="4" fill="yellow" /></svg>',                                                                                                                                                                         
           requireInteraction: true, // This makes the notification stay until user interacts with it                                                                                                 
-          tag: 'posture-notification', // Tag to replace existing notifications
-          silent: false,                                                                                                                                                                             
-          vibrate: [200, 100, 200] // Vibration pattern for mobile devices
+          tag: notificationId, // Use unique ID to prevent replacing previous notifications
+          silent: false, // Allow system sound
+          vibrate: [200, 100, 200], // Vibration pattern for mobile devices
+          renotify: true, // Make sound/vibration even if using same tag
+          badge: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="50" height="50"><circle cx="50" cy="50" r="40" stroke="red" stroke-width="4" fill="yellow" /></svg>'
         });                                                                                                                                                                                          
                                                                                                                                                                                                      
         console.log("Created system notification");                                                                                                                                                         
@@ -150,11 +167,19 @@ class NotificationService {
           notification.close();                                                                                                                                                                      
         }, 30000); // Increased to 30 seconds                                                                                                                                                                                   
       } catch (error) {                                                                                                                                                                              
-        console.error('Error showing system notification:', error);                                                                                                                                         
+        console.error('Error showing system notification:', error);
+        
+        // If system notification fails, always show in-app notification as fallback
+        if (document.visibilityState !== 'visible') {
+          this.showInAppNotification(message);
+        }
       }
     } else {
       console.log('System notification permission not granted:', Notification.permission);
       this.requestPermission();
+      
+      // Show in-app notification as fallback if permission not granted
+      this.showInAppNotification(message);
     }                                                                                                                                                                                              
   }
   
@@ -226,28 +251,57 @@ class NotificationService {
   public async notifyPostureStatus(status: PostureStatus, duration: number): Promise<void> {
     console.log(`Posture status: ${status}, Duration: ${duration}s, Permission: ${Notification.permission}`);
 
+    // Only send notifications if the tab is not visible or if duration is significant
+    const isTabVisible = document.visibilityState === 'visible';
+    
     // Notify more frequently at first, then less frequently as time goes on
     if (status === PostureStatus.BAD) {
       if (duration > 5) {
-        // First notification after 5 seconds
-        if (Math.floor(duration) === 5) {
-          console.log('Sending initial notification');
+        // First notification after 5 seconds - only if tab is not visible
+        if (Math.floor(duration) === 5 && !isTabVisible) {
+          console.log('Sending initial notification (tab not visible)');
           this.notifyBadPosture(`Poor posture detected! Please sit up straight.`);
         }
-        // Then every 10 seconds for the first minute
-        else if (duration < 60 && Math.floor(duration) % 10 === 0) {
-          console.log('Sending early notification');
+        // Then every 10 seconds for the first minute - only if tab is not visible
+        else if (duration < 60 && Math.floor(duration) % 10 === 0 && !isTabVisible) {
+          console.log('Sending early notification (tab not visible)');
           this.notifyBadPosture(`You've had poor posture for ${Math.floor(duration)} seconds. Please correct it!`);
         }
-        // Then every 30 seconds after the first minute
-        else if (duration >= 60 && Math.floor(duration) % 30 === 0) {
-          console.log('Sending periodic notification');
+        // Then every 30 seconds after the first minute - only if tab is not visible
+        else if (duration >= 60 && Math.floor(duration) % 30 === 0 && !isTabVisible) {
+          console.log('Sending periodic notification (tab not visible)');
           this.notifyBadPosture(`You've had poor posture for ${Math.floor(duration / 60)} minute${duration >= 120 ? 's' : ''}. Take a break!`);
+        }
+        // For very long durations, notify even if tab is visible
+        else if (duration >= 120 && Math.floor(duration) % 60 === 0) {
+          console.log('Sending critical notification (long duration)');
+          this.notifyBadPosture(`Warning: You've had poor posture for ${Math.floor(duration / 60)} minutes! Please take a break now.`);
         }
       }
     }
   }
   
+  public async ensurePermissions(): Promise<void> {
+    if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+      console.log('Requesting notification permission on startup');
+      try {
+        const permission = await Notification.requestPermission();
+        this.hasPermission = permission === 'granted';
+        
+        if (permission === 'granted') {
+          // Send a test notification to verify it works
+          const notification = new Notification('Posture App Notifications Enabled', {
+            body: 'You will now receive alerts when your posture needs correction.',
+            icon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="50" height="50"><circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="lightgreen" /></svg>'
+          });
+          
+          setTimeout(() => notification.close(), 5000);
+        }
+      } catch (error) {
+        console.error('Error requesting notification permission:', error);
+      }
+    }
+  }
 }
 
 // Create singleton instance

@@ -36,6 +36,9 @@ function App() {
       if (needsCalibration) {
         setShowCalibration(true);
       }
+      
+      // Request notification permissions on startup
+      notificationService.ensurePermissions();
     };
     
     checkCalibration();
