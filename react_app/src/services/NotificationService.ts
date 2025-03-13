@@ -251,31 +251,26 @@ class NotificationService {
   public async notifyPostureStatus(status: PostureStatus, duration: number): Promise<void> {
     console.log(`Posture status: ${status}, Duration: ${duration}s, Permission: ${Notification.permission}`);
 
-    // Only send notifications if the tab is not visible or if duration is significant
+    // For testing purposes, we'll show notifications regardless of tab visibility
     const isTabVisible = document.visibilityState === 'visible';
     
     // Notify more frequently at first, then less frequently as time goes on
     if (status === PostureStatus.BAD) {
       if (duration > 5) {
-        // First notification after 5 seconds - only if tab is not visible
-        if (Math.floor(duration) === 5 && !isTabVisible) {
-          console.log('Sending initial notification (tab not visible)');
+        // First notification after 5 seconds
+        if (Math.floor(duration) === 5) {
+          console.log('Sending initial notification');
           this.notifyBadPosture(`Poor posture detected! Please sit up straight.`);
         }
-        // Then every 10 seconds for the first minute - only if tab is not visible
-        else if (duration < 60 && Math.floor(duration) % 5 === 0 && !isTabVisible) {
-          console.log('Sending early notification (tab not visible)');
+        // Then every 10 seconds for the first minute
+        else if (duration < 60 && Math.floor(duration) % 10 === 0) {
+          console.log('Sending early notification');
           this.notifyBadPosture(`You've had poor posture for ${Math.floor(duration)} seconds. Please correct it!`);
         }
-        // Then every 30 seconds after the first minute - only if tab is not visible
-        else if (duration >= 60 && Math.floor(duration) % 10 === 0 && !isTabVisible) {
-          console.log('Sending periodic notification (tab not visible)');
+        // Then every 30 seconds after the first minute
+        else if (duration >= 60 && Math.floor(duration) % 30 === 0) {
+          console.log('Sending periodic notification');
           this.notifyBadPosture(`You've had poor posture for ${Math.floor(duration / 60)} minute${duration >= 120 ? 's' : ''}. Take a break!`);
-        }
-        // For very long durations, notify even if tab is visible
-        else if (duration >= 120 && Math.floor(duration) % 30 === 0) {
-          console.log('Sending critical notification (long duration)');
-          this.notifyBadPosture(`Warning: You've had poor posture for ${Math.floor(duration / 60)} minutes! Please take a break now.`);
         }
       }
     }
