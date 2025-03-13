@@ -160,16 +160,16 @@ class PostureDetectionService {
     // Weight the vertical deviation more heavily as it's more reliable
     const slouchLevel = slouchAngle * 0.7 + (noseVerticalDeviation > 0 ? noseVerticalDeviation * 0.3 : 0);
     
-    console.log('Slouch analysis:', {
-      leftSlouchAngle,
-      rightSlouchAngle,
-      avgSlouchAngle: slouchAngle,
-      noseToShoulderY,
-      referenceNoseToShoulderY,
-      noseVerticalDeviation,
-      combinedSlouchLevel: slouchLevel,
-      threshold: currentSettings.slouchAngleThreshold
-    });
+    // console.log('Slouch analysis:', {
+    //   leftSlouchAngle,
+    //   rightSlouchAngle,
+    //   avgSlouchAngle: slouchAngle,
+    //   noseToShoulderY,
+    //   referenceNoseToShoulderY,
+    //   noseVerticalDeviation,
+    //   combinedSlouchLevel: slouchLevel,
+    //   threshold: currentSettings.slouchAngleThreshold
+    // });
     
     // Determine if posture is good using configurable thresholds
     const isShoulderAligned = shoulderAlignment < currentSettings.shoulderAlignmentThreshold;
@@ -465,20 +465,20 @@ class PostureDetectionService {
       baseSettings.slouchAngleThreshold * 0.7
     );
     
-    console.log('Generated personalized thresholds:', {
-      original: {
-        shoulderAlignment: this.calibrationData.referenceShoulderAlignment,
-        slouchAngle: avgSlouchAngle
-      },
-      thresholds: {
-        shoulderAlignment: shoulderAlignmentThreshold,
-        slouchAngle: slouchAngleThreshold
-      },
-      multipliers: {
-        shoulder: shoulderBaseMultiplier + shoulderAdaptiveFactor,
-        slouch: slouchBaseMultiplier + slouchAdaptiveFactor
-      }
-    });
+    // console.log('Generated personalized thresholds:', {
+    //   original: {
+    //     shoulderAlignment: this.calibrationData.referenceShoulderAlignment,
+    //     slouchAngle: avgSlouchAngle
+    //   },
+    //   thresholds: {
+    //     shoulderAlignment: shoulderAlignmentThreshold,
+    //     slouchAngle: slouchAngleThreshold
+    //   },
+    //   multipliers: {
+    //     shoulder: shoulderBaseMultiplier + shoulderAdaptiveFactor,
+    //     slouch: slouchBaseMultiplier + slouchAdaptiveFactor
+    //   }
+    // });
     
     return {
       ...baseSettings,
