@@ -130,10 +130,9 @@ const CameraFeed = ({ onCalibrationNeeded, isCalibrated }: CameraFeedProps) => {
           const duration = (Date.now() - badPostureStartTimeRef.current) / 1000;
           setBadPostureDuration(duration);
           
-          // Notify about bad posture every minute
-          if (duration > 30 && Math.floor(duration) % 60 === 0) {
-            notificationService.notifyPostureStatus(PostureStatus.BAD, duration);
-          }
+          // Call notifyPostureStatus for every second of bad posture
+          // The service will handle the notification frequency internally
+          notificationService.notifyPostureStatus(PostureStatus.BAD, duration);
         }
       }, 1000);
     } else {
