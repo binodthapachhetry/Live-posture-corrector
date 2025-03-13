@@ -200,7 +200,11 @@ function App() {
 
       {isCalibrated && (
         <button                                                                                                                                                                                          
-          onClick={() => notificationService.notifyBadPosture('Test notification')}                                                                                                                      
+          onClick={() => {
+            console.log('Testing notification...');
+            notificationService.checkNotificationStatus(); // Add diagnostic info
+            notificationService.notifyBadPosture('Test notification');
+          }}                                                                                                                      
           style={{                                                                                                                                                                                       
             padding: '10px 20px',                                                                                                                                                                        
             margin: '20px 0',                                                                                                                                                                            
