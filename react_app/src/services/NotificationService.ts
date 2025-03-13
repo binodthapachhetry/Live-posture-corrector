@@ -162,6 +162,7 @@ class NotificationService {
       console.log('Attempting to send notification'); 
       this.notifyBadPosture(`You've had poor posture for ${Math.floor(duration)} seconds. Take a break!`);
     }
+  }
   
 }
 
