@@ -7,10 +7,12 @@ class NotificationService {
   private notificationEnabled: boolean = true;
   private notificationChannel: BroadcastChannel | null = null;
   private tabId: string = crypto.randomUUID();
+  private swRegistration: ServiceWorkerRegistration | null = null;
 
   constructor() {
     this.checkPermission();
     this.setupCrossTabSync();
+    this.registerServiceWorker();
   }
 
   private setupCrossTabSync() {
@@ -21,6 +23,18 @@ class NotificationService {
           this.lastNotificationTime = event.data.timestamp;
         }
       };
+    }
+  }
+  
+  private async registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.register('/service-worker.js');
+        this.swRegistration = registration;
+        console.log('Service Worker registered successfully', registration);
+      } catch (error) {
+        console.error('Service Worker registration failed:', error);
+      }
     }
   }
 
@@ -120,9 +134,35 @@ class NotificationService {
     // Only show in-app notification if the tab is focused
     if (document.visibilityState === 'visible') {
       this.showInAppNotification(message);
+      return; // Don't show system notification if in-app notification is shown
     }
                                                                                                                                                                                                    
-    // Then try system notification if we have permission
+    // Try to use service worker for notifications if available
+    if (this.swRegistration && 'PushManager' in window && Notification.permission === 'granted') {
+      try {
+        // Create a unique notification ID
+        const notificationId = `posture-${Date.now()}`;
+        
+        // Use the service worker to show the notification
+        this.swRegistration.showNotification('Posture Alert', {
+          body: message + ' ' + new Date().toLocaleTimeString(),
+          icon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="50" height="50"><circle cx="50" cy="50" r="40" stroke="red" stroke-width="4" fill="yellow" /></svg>',
+          badge: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="50" height="50"><circle cx="50" cy="50" r="40" stroke="red" stroke-width="4" fill="yellow" /></svg>',
+          vibrate: [200, 100, 200],
+          tag: notificationId,
+          renotify: true,
+          requireInteraction: true
+        });
+        
+        console.log('Notification sent via Service Worker');
+        return;
+      } catch (error) {
+        console.error('Error showing notification via Service Worker:', error);
+        // Fall back to regular notification
+      }
+    }
+    
+    // Fall back to regular Notification API if service worker is not available
     if (Notification.permission === 'granted') {
       try {                                                                                                                                                                                          
         console.log("Creating system notification");
@@ -277,6 +317,9 @@ class NotificationService {
   }
   
   public async ensurePermissions(): Promise<void> {
+    // Register service worker first
+    await this.registerServiceWorker();
+    
     if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
       console.log('Requesting notification permission on startup');
       try {
@@ -285,12 +328,21 @@ class NotificationService {
         
         if (permission === 'granted') {
           // Send a test notification to verify it works
-          const notification = new Notification('Posture App Notifications Enabled', {
-            body: 'You will now receive alerts when your posture needs correction.',
-            icon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="50" height="50"><circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="lightgreen" /></svg>'
-          });
-          
-          setTimeout(() => notification.close(), 5000);
+          if (this.swRegistration) {
+            // Use service worker if available
+            this.swRegistration.showNotification('Posture App Notifications Enabled', {
+              body: 'You will now receive alerts when your posture needs correction.',
+              icon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="50" height="50"><circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="lightgreen" /></svg>'
+            });
+          } else {
+            // Fall back to regular notification
+            const notification = new Notification('Posture App Notifications Enabled', {
+              body: 'You will now receive alerts when your posture needs correction.',
+              icon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="50" height="50"><circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="lightgreen" /></svg>'
+            });
+            
+            setTimeout(() => notification.close(), 5000);
+          }
         }
       } catch (error) {
         console.error('Error requesting notification permission:', error);
