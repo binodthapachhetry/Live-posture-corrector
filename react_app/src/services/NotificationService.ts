@@ -131,38 +131,14 @@ class NotificationService {
     this.lastNotificationTime = now;
     this.broadcastNotification();
     
-    // Only show in-app notification if the tab is focused
-    if (document.visibilityState === 'visible') {
-      this.showInAppNotification(message);
-      return; // Don't show system notification if in-app notification is shown
-    }
-                                                                                                                                                                                                   
-    // Try to use service worker for notifications if available
-    if (this.swRegistration && 'PushManager' in window && Notification.permission === 'granted') {
-      try {
-        // Create a unique notification ID
-        const notificationId = `posture-${Date.now()}`;
-        
-        // Use the service worker to show the notification
-        this.swRegistration.showNotification('Posture Alert', {
-          body: message + ' ' + new Date().toLocaleTimeString(),
-          icon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="50" height="50"><circle cx="50" cy="50" r="40" stroke="red" stroke-width="4" fill="yellow" /></svg>',
-          badge: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="50" height="50"><circle cx="50" cy="50" r="40" stroke="red" stroke-width="4" fill="yellow" /></svg>',
-          vibrate: [200, 100, 200],
-          tag: notificationId,
-          renotify: true,
-          requireInteraction: true
-        });
-        
-        console.log('Notification sent via Service Worker');
-        return;
-      } catch (error) {
-        console.error('Error showing notification via Service Worker:', error);
-        // Fall back to regular notification
-      }
-    }
+    // Always show in-app notification regardless of tab visibility
+    this.showInAppNotification(message);
     
-    // Fall back to regular Notification API if service worker is not available
+    console.log("Attempting to show system notification...");
+    console.log("Notification permission:", Notification.permission);
+    console.log("Service worker registration:", this.swRegistration ? "Available" : "Not available");
+                                                                                                                                                                                                   
+    // Try system notification if we have permission
     if (Notification.permission === 'granted') {
       try {                                                                                                                                                                                          
         console.log("Creating system notification");
@@ -208,18 +184,10 @@ class NotificationService {
         }, 30000); // Increased to 30 seconds                                                                                                                                                                                   
       } catch (error) {                                                                                                                                                                              
         console.error('Error showing system notification:', error);
-        
-        // If system notification fails, always show in-app notification as fallback
-        if (document.visibilityState !== 'visible') {
-          this.showInAppNotification(message);
-        }
       }
     } else {
       console.log('System notification permission not granted:', Notification.permission);
       this.requestPermission();
-      
-      // Show in-app notification as fallback if permission not granted
-      this.showInAppNotification(message);
     }                                                                                                                                                                                              
   }
   
