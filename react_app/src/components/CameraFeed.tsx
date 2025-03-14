@@ -104,7 +104,7 @@ const CameraFeed = ({ onCalibrationNeeded, isCalibrated }: CameraFeedProps) => {
       
       setIsWebcamOn(prev => !prev);
     } catch (err) {
-      setError(err.message);
+      // setError(err.message);
       setIsWebcamOn(false);
     }
   }, [isWebcamOn, videoConstraints]);
@@ -241,7 +241,7 @@ const CameraFeed = ({ onCalibrationNeeded, isCalibrated }: CameraFeedProps) => {
             audio={false}
             videoConstraints={videoConstraints}
             className="webcam-preview"
-            onUserMediaError={(err) => setError(err.message)}
+            // onUserMediaError={(err) => setError(err.message)}
             onUserMedia={() => setError(null)}
             mirrored={false}
           />
