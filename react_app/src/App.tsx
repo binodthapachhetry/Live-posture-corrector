@@ -109,10 +109,10 @@ function App() {
               min="30"
               max="300"
               step="30"
-              // value={settings.notificationInterval / 1000}
+              value={settings.notificationInterval / 1000}
               onChange={(e) => handleSettingChange('notificationInterval', parseInt(e.target.value) * 1000)}
             />
-            {/* <span>{settings.notificationInterval / 1000}s</span> */}
+            <span>{settings.notificationInterval / 1000}s</span>
           </div>
           
           <div className="setting-group">

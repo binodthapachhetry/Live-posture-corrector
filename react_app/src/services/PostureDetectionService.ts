@@ -10,8 +10,10 @@ class PostureDetectionService {
   // Default posture settings
   private postureSettings: PostureSettings = {
     shoulderAlignmentThreshold: 15, // pixels
-    slouchAngleThreshold: 20, // degrees
-    minPoseConfidence: 0.25
+    slouchThreshold: 20, // degrees
+    detectionConfidence: 0.6,
+    enableNotifications: true,
+    notificationInterval: 60000 // 1 minute
   };
   
   // Calibration data
@@ -173,7 +175,7 @@ class PostureDetectionService {
     
     // Determine if posture is good using configurable thresholds
     const isShoulderAligned = shoulderAlignment < currentSettings.shoulderAlignmentThreshold;
-    const isNotSlouchedForward = slouchLevel < currentSettings.slouchAngleThreshold;
+    const isNotSlouchedForward = slouchLevel < currentSettings.slouchThreshold;
     const isGoodPosture = isShoulderAligned && isNotSlouchedForward;
     
     // Generate detailed feedback
@@ -191,7 +193,7 @@ class PostureDetectionService {
       feedback = `Your ${higherSide} shoulder is higher. Try to level your shoulders`;
     } else if (!isNotSlouchedForward) {
       // Only slouching issue
-      const severity = slouchLevel > currentSettings.slouchAngleThreshold * 1.5 
+      const severity = slouchLevel > currentSettings.slouchThreshold * 1.5 
         ? "significantly" 
         : "slightly";
       feedback = `You're ${severity} slouching forward. Sit up straight!`;
@@ -463,9 +465,9 @@ class PostureDetectionService {
     const slouchAdaptiveFactor = 
       10 / (avgSlouchAngle + 10); // Adaptive factor (reduced from 15)
     
-    const slouchAngleThreshold = Math.max(
+    const slouchThreshold = Math.max(
       avgSlouchAngle * (slouchBaseMultiplier + slouchAdaptiveFactor),
-      baseSettings.slouchAngleThreshold * 0.7
+      baseSettings.slouchThreshold * 0.7
     );
     
     // console.log('Generated personalized thresholds:', {
@@ -486,7 +488,7 @@ class PostureDetectionService {
     return {
       ...baseSettings,
       shoulderAlignmentThreshold,
-      slouchAngleThreshold
+      slouchThreshold
     };
   }
 }
