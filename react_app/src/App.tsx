@@ -201,42 +201,6 @@ function App() {
         settings={settings}
       />
 
-      {isCalibrated && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', margin: '20px 0' }}>
-          <button                                                                                                                                                                                          
-            onClick={() => {
-              console.log('Testing notification...');
-              notificationService.checkNotificationStatus(); // Add diagnostic info
-              notificationService.notifyBadPosture('Test notification');
-            }}                                                                                                                      
-            style={{                                                                                                                                                                                       
-              padding: '10px 20px',                                                                                                                                                                                                                                                                                                                                                  
-              backgroundColor: '#4285f4',                                                                                                                                                                  
-              color: 'white',                                                                                                                                                                              
-              border: 'none',                                                                                                                                                                              
-              borderRadius: '4px',                                                                                                                                                                         
-              cursor: 'pointer',
-              position: 'relative',
-              zIndex: 5,
-              pointerEvents: 'auto'                                                                                                                                                                            
-            }}                                                                                                                                                                                             
-          >                                                                                                                                                                                                
-            Test Notification                                                                                                                                                                              
-          </button>
-          <div style={{ 
-            fontSize: '0.8rem', 
-            color: '#666', 
-            maxWidth: '400px', 
-            textAlign: 'center',
-            padding: '5px',
-            backgroundColor: '#f5f5f5',
-            borderRadius: '4px'
-          }}>
-            If notifications don't appear, check your browser and OS notification settings.
-            Try clicking this button multiple times.
-          </div>
-        </div>
-      )}
       
       <footer className="app-footer">
         <p>
