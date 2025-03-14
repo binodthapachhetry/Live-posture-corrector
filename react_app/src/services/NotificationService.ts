@@ -262,7 +262,7 @@ class NotificationService {
   //     console.log('Could not play notification sound', e);
   //   }
   // }
-  public async notifyPostureStatus(status: PostureStatus, duration: number): Promise<void> {
+  public async notifyPostureStatus(status: PostureStatus, duration: number, feedbackMessage?: string): Promise<void> {
     console.log(`Posture status: ${status}, Duration: ${duration}s, Permission: ${Notification.permission}`);
 
     // // For testing purposes, we'll show notifications regardless of tab visibility
@@ -274,17 +274,17 @@ class NotificationService {
         // First notification after 5 seconds
         if (Math.floor(duration) === 5) {
           console.log('Sending initial notification');
-          this.notifyBadPosture(`Poor posture detected! Please sit up straight.`);
+          this.notifyBadPosture(feedbackMessage || `Poor posture detected! Please sit up straight.`);
         }
         // Then every 10 seconds for the first minute
         else if (duration < 60 && Math.floor(duration) % 10 === 0) {
           console.log('Sending early notification');
-          this.notifyBadPosture(`You've had poor posture for ${Math.floor(duration)} seconds. Please correct it!`);
+          this.notifyBadPosture(feedbackMessage || `You've had poor posture for ${Math.floor(duration)} seconds. Please correct it!`);
         }
         // Then every 30 seconds after the first minute
         else if (duration >= 60 && Math.floor(duration) % 30 === 0) {
           console.log('Sending periodic notification');
-          this.notifyBadPosture(`You've had poor posture for ${Math.floor(duration / 60)} minute${duration >= 120 ? 's' : ''}. Take a break!`);
+          this.notifyBadPosture(feedbackMessage || `You've had poor posture for ${Math.floor(duration / 60)} minute${duration >= 120 ? 's' : ''}. Take a break!`);
         }
       }
     }

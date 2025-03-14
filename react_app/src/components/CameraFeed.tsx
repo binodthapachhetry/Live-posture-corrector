@@ -132,7 +132,12 @@ const CameraFeed = ({ onCalibrationNeeded, isCalibrated }: CameraFeedProps) => {
           
           // Call notifyPostureStatus for every second of bad posture
           // The service will handle the notification frequency internally
-          notificationService.notifyPostureStatus(PostureStatus.BAD, duration);
+          // Pass the feedback message from analysisResult to the notification service
+          notificationService.notifyPostureStatus(
+            PostureStatus.BAD, 
+            duration,
+            analysisResult?.feedback
+          );
         }
       }, 1000);
     } else {
@@ -143,7 +148,7 @@ const CameraFeed = ({ onCalibrationNeeded, isCalibrated }: CameraFeedProps) => {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [postureStatus]);
+  }, [postureStatus, analysisResult]);
 
   // Main frame processing function
   const processFrame = useCallback(async () => {
