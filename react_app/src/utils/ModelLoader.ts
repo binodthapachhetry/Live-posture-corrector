@@ -20,7 +20,7 @@ interface ModelLoaderConfig {
   export function loadRemote(config: ModelLoaderConfig): ModelHandle {                                                                                   
     // Implementation remains similar but with type guarantees                                                                                           
     // Add proper type assertions for IndexedDB operations                                                                                               
-    const store = tx.objectStore(storeName) as IDBObjectStore;                                                                                           
+    // const store = tx.objectStore(storeName) as IDBObjectStore;                                                                                           
                                                                                                                                                          
     return {                                                                                                                                             
       unloadModel: () => {                                                                                                                               

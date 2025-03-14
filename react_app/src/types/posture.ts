@@ -8,8 +8,8 @@ export interface PostureAnalysisResult {
 
 export interface PostureSettings {
   shoulderAlignmentThreshold: number;
-  slouchAngleThreshold: number;
-  minPoseConfidence: number;
+  slouchThreshold: number;
+  detectionConfidence: number;
   enableNotifications?: boolean;
   notificationInterval?: number; // in milliseconds
 }
