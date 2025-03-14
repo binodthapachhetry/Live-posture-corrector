@@ -243,6 +243,7 @@ const CameraFeed = ({ onCalibrationNeeded, isCalibrated }: CameraFeedProps) => {
             className="webcam-preview"
             onUserMediaError={(err) => setError(err.message)}
             onUserMedia={() => setError(null)}
+            mirrored={false}
           />
         )}
         
