@@ -186,10 +186,12 @@ function App() {
         </div>
       )}
 
-      <CameraFeed 
-        onCalibrationNeeded={() => setShowCalibration(true)} 
-        isCalibrated={isCalibrated}
-      />
+      <div className="camera-feed-container">
+        <CameraFeed 
+          onCalibrationNeeded={() => setShowCalibration(true)} 
+          isCalibrated={isCalibrated}
+        />
+      </div>
 
       <CalibrationModal 
         isOpen={showCalibration}
@@ -200,7 +202,6 @@ function App() {
         onCalibrationComplete={handleCalibrationComplete}
         settings={settings}
       />
-
       
       <footer className="app-footer">
         <p>
