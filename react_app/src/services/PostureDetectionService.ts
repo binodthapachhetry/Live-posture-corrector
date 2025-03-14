@@ -184,6 +184,8 @@ class PostureDetectionService {
       feedback = "Fix your posture: level your shoulders and sit up straight";
     } else if (!isShoulderAligned) {
       // Only shoulder alignment issue
+      // Since we're using unmirrored video, left shoulder is actually on the left side of the screen
+      // So we can directly use the y-coordinates to determine which shoulder is higher
       const higherSide = leftShoulder.y < rightShoulder.y ? "left" : "right";
 
       feedback = `Your ${higherSide} shoulder is higher. Try to level your shoulders`;
