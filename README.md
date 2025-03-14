@@ -59,6 +59,22 @@ npm run dev
 - Safari 14+
 - Edge 83+
 
+## Notification Setup                                                                                                                                                                            
+                                                                                                                                                                                                  
+ ### macOS and Chrome Browser                                                                                                                                                                     
+                                                                                                                                                                                                  
+ For the posture notifications to work properly on macOS with Chrome:                                                                                                                             
+                                                                                                                                                                                                  
+ 1. Open **System Preferences** (or **System Settings** on newer macOS versions)                                                                                                                  
+ 2. Select **Notifications & Focus** (or just **Notifications** on older versions)                                                                                                                
+ 3. Scroll down and find **Google Chrome Helper (Alerts)** in the list                                                                                                                            
+ 4. Click on it and ensure:                                                                                                                                                                       
+    - **Allow Notifications** is turned ON                                                                                                                                                        
+    - **Alert** style is selected (not Banner)                                                                                                                                                    
+    - **Play sound for notifications** is enabled for audio alerts                                                                                                                                
+                                                                                                                                                                                                  
+ Without these settings, you may not see the posture correction notifications when they're triggered.  
+
 ## License
 
 MIT
