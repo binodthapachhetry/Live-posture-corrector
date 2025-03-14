@@ -3,7 +3,7 @@ import { PostureStatus } from '../types/posture';
 class NotificationService {
   private hasPermission: boolean = false;
   private lastNotificationTime: number = 0;
-  private notificationCooldown: number = 60000;
+  private notificationCooldown: number = 10000;
   private notificationEnabled: boolean = true;
   private notificationChannel: BroadcastChannel | null = null;
   private tabId: string = crypto.randomUUID();
@@ -131,8 +131,8 @@ class NotificationService {
     this.lastNotificationTime = now;
     this.broadcastNotification();
     
-    // Always show in-app notification regardless of tab visibility
-    this.showInAppNotification(message);
+    // // Always show in-app notification regardless of tab visibility
+    // this.showInAppNotification(message);
     
     console.log("Attempting to show system notification...");
     console.log("Notification permission:", Notification.permission);
@@ -148,24 +148,30 @@ class NotificationService {
         
         // Play a sound to alert the user (before creating notification)
         try {
+          console.log("Playing sound before creating notification.");
           const audio = new Audio('data:audio/wav;base64,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');
           audio.play().catch(e => console.log('Could not play notification sound', e));
         } catch (e) {
           console.log('Could not play notification sound', e);
         }
         
-        // Create the notification with options that maximize visibility
+        // // Create the notification with options that maximize visibility
+        // const notification = new Notification('Posture Alert', {                                                                                                                              
+        //   body: message + ' ' + new Date().toLocaleTimeString(),                                                                                                                                     
+        //   icon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="50" height="50"><circle cx="50" cy="50" r="40" stroke="red" stroke-width="4" fill="yellow" /></svg>',                                                                                                                                                                         
+        //   requireInteraction: true, // This makes the notification stay until user interacts with it                                                                                                 
+        //   tag: notificationId, // Use unique ID to prevent replacing previous notifications
+        //   silent: false, // Allow system sound
+        //   vibrate: [200, 100, 200], // Vibration pattern for mobile devices
+        //   renotify: true, // Make sound/vibration even if using same tag
+        //   badge: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="50" height="50"><circle cx="50" cy="50" r="40" stroke="red" stroke-width="4" fill="yellow" /></svg>'
+        // });   
+        
         const notification = new Notification('Posture Alert', {                                                                                                                              
-          body: message + ' ' + new Date().toLocaleTimeString(),                                                                                                                                     
-          icon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="50" height="50"><circle cx="50" cy="50" r="40" stroke="red" stroke-width="4" fill="yellow" /></svg>',                                                                                                                                                                         
-          requireInteraction: true, // This makes the notification stay until user interacts with it                                                                                                 
-          tag: notificationId, // Use unique ID to prevent replacing previous notifications
-          silent: false, // Allow system sound
-          vibrate: [200, 100, 200], // Vibration pattern for mobile devices
-          renotify: true, // Make sound/vibration even if using same tag
-          badge: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="50" height="50"><circle cx="50" cy="50" r="40" stroke="red" stroke-width="4" fill="yellow" /></svg>'
-        });                                                                                                                                                                                          
-                                                                                                                                                                                                     
+          body: message,                                                                                                                                     
+          requireInteraction: true,                                                                                                
+          });  
+        
         console.log("Created system notification");                                                                                                                                                         
                                                                                                                                                                                                      
         notification.onshow = () => console.log("Notification shown at", new Date().toLocaleTimeString());                                                                                           
@@ -174,14 +180,14 @@ class NotificationService {
           window.focus(); // Focus the window when notification is clicked
           notification.close();
         };                                                                                                                            
-        notification.onclose = () => console.log("Notification closed");                                                                                                                             
+        notification.onclose = () => console.log("Notification closed at ", new Date().toLocaleTimeString());                                                                                                                             
         notification.onerror = (e) => console.error("Notification error:", e);                                                                                                                       
                                                                                                                                                                                                      
         // Keep notification longer                                                                                                                                                                  
         setTimeout(() => {                                                                                                                                                                           
           console.log("Closing notification");                                                                                                                                                       
           notification.close();                                                                                                                                                                      
-        }, 30000); // Increased to 30 seconds                                                                                                                                                                                   
+        }, 5000); // Increased to 5 seconds                                                                                                                                                                                   
       } catch (error) {                                                                                                                                                                              
         console.error('Error showing system notification:', error);
       }
