@@ -184,7 +184,8 @@ class PostureDetectionService {
       feedback = "Fix your posture: level your shoulders and sit up straight";
     } else if (!isShoulderAligned) {
       // Only shoulder alignment issue
-      const higherSide = leftShoulder.y < rightShoulder.y ? "right" : "left";
+      const higherSide = leftShoulder.y < rightShoulder.y ? "left" : "right";
+
       feedback = `Your ${higherSide} shoulder is higher. Try to level your shoulders`;
     } else if (!isNotSlouchedForward) {
       // Only slouching issue
