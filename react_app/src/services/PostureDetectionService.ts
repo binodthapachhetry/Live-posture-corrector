@@ -62,6 +62,11 @@ class PostureDetectionService {
     }
   }
 
+  /**
+   * Detects pose from an upper-body image region.
+   * Only upper-body keypoints (shoulders, ears, nose) are required.
+   * MoveNet will return all 17 keypoints, but only the upper-body ones are used.
+   */
   async detectPose(imageData: ImageData): Promise<poseDetection.Pose[]> {
     if (!this.model) {
       throw new Error('Model not loaded');
@@ -70,12 +75,13 @@ class PostureDetectionService {
     // Convert ImageData to tensor
     const imageTensor = tf.browser.fromPixels(imageData);
     
-    // Run detection
+    // Run detection (MoveNet is robust to upper-body crops)
     const poses = await this.model.estimatePoses(imageTensor);
     
     // Clean up tensor to prevent memory leaks
     imageTensor.dispose();
     
+    // No filtering needed: analyzePosture will use only upper-body keypoints
     return poses;
   }
 
