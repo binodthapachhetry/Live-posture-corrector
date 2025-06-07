@@ -2,6 +2,56 @@ import * as tf from '@tensorflow/tfjs';
 import * as poseDetection from '@tensorflow-models/pose-detection';
 import { PostureAnalysisResult, PostureSettings, CalibrationData } from '../types/posture';
 
+/**
+ * NOTE: The current implementation uses geometric thresholds on angles/distances.
+ * 
+ * For state-of-the-art posture quality assessment, consider replacing this with:
+ * 
+ * 1. Spatio-Temporal Graph Convolutional Networks (ST-GCN, 2s-AGCN, CTR-GCN)
+ *    - Model skeleton as a graph (joints=nodes, bones=edges), run graph convolutions over space and time.
+ *    - Captures subtle, multi-joint dependencies and temporal drift.
+ *    - Train a binary/tri-class model (GOOD / BAD-SLUMP / BAD-LEAN) on 1–3s pose sequences.
+ *    - See: Shi et al., CVPR 2019; 2s-AGCN; CTR-GCN (CVPR 2021).
+ * 
+ * 2. Transformer-based Skeleton Encoders (PoseFormer, TokenPose, TFC-GCN)
+ *    - Flatten per-frame joint coordinates into token embeddings, apply self-attention across joints/frames.
+ *    - Models long-term posture degradation and global dependencies.
+ *    - Lightweight versions (e.g., Performer) can run in-browser.
+ *    - See: Zheng et al., ICCV 2021 (PoseFormer); Li et al., CVPR 2022 (TokenPose).
+ * 
+ * 3. Self-Supervised Contrastive Learning (e.g. SkeleHRNet, Info-GCN)
+ *    - Pre-train on skeleton sequence augmentations, fine-tune on small labelled “good vs bad” set.
+ *    - Robust to camera angles, lighting, and body shape diversity.
+ * 
+ * 4. Anomaly Detection with Sequence Autoencoders/VAEs
+ *    - Train on GOOD posture only; high reconstruction error = BAD posture.
+ *    - Yields a continuous “posture quality score”.
+ * 
+ * 5. Probabilistic Graphical Models with Temporal Bayesian Filters
+ *    - Model hidden “posture state” as a Markov chain, update with noisy keypoint observations.
+ *    - Smooths out detector jitter, reduces false positives.
+ *    - Can be implemented in real time in JS (e.g., Kalman/Bayesian filters).
+ * 
+ * 6. 3-D Pose + Learned Biomechanical Metrics (VideoPose3D, METRO)
+ *    - Lift 2-D keypoints to 3-D, compute ergonomic angles (pelvis tilt, lumbar curvature).
+ *    - Distinguishes forward-lean vs camera distortion; enables richer feedback.
+ * 
+ * 7. Multimodal Fusion with Vision Transformers (ViT)
+ *    - Fuse RGB patches + pose tokens; model attends to both raw pixels and skeleton cues.
+ *    - Recovers from missing joints/occlusion.
+ * 
+ * 8. RL-Driven Personalised Thresholding
+ *    - Treat feedback as RL “intervention”; agent learns per-user slouch thresholds & cooldowns.
+ *    - Adapts to individual ergonomics and notification tolerance.
+ * 
+ * Implementation notes:
+ * - Data: A small, diverse webcam dataset labelled for posture quality is ideal; or use self-supervision + anomaly detection.
+ * - Runtime: ST-GCN & light Transformers can run at >30 FPS in-browser; 3-D mesh models may need WASM/WebGPU or server offload.
+ * - UX: Advanced models output confidence scores—pair with probabilistic filtering to avoid notification spam.
+ * 
+ * By moving to a data-driven, sequence-aware method, you’ll replace brittle geometric thresholds with a learned representation that better handles body diversity, camera tilt, and slow posture drift, while still fitting browser-only deployment.
+ */
+
 class PostureDetectionService {
   private model: poseDetection.PoseDetector | null = null;
   private modelLoading: boolean = false;
@@ -86,6 +136,9 @@ class PostureDetectionService {
   }
 
   analyzePosture(poses: poseDetection.Pose[], settings?: Partial<PostureSettings>): PostureAnalysisResult {
+    // --- CURRENT: geometric thresholding on angles/distances ---
+    // See above for state-of-the-art alternatives.
+    // -----------------------------------------------------------
     // Apply any custom settings passed in
     let currentSettings = {
       ...this.postureSettings,
@@ -167,17 +220,6 @@ class PostureDetectionService {
     // Combine both measures for a more robust slouch detection
     // Weight the vertical deviation more heavily as it's more reliable
     const slouchLevel = slouchAngle * 0.7 + (noseVerticalDeviation > 0 ? noseVerticalDeviation * 0.3 : 0);
-    
-    // console.log('Slouch analysis:', {
-    //   leftSlouchAngle,
-    //   rightSlouchAngle,
-    //   avgSlouchAngle: slouchAngle,
-    //   noseToShoulderY,
-    //   referenceNoseToShoulderY,
-    //   noseVerticalDeviation,
-    //   combinedSlouchLevel: slouchLevel,
-    //   threshold: currentSettings.slouchAngleThreshold
-    // });
     
     // Determine if posture is good using configurable thresholds
     const isShoulderAligned = shoulderAlignment < currentSettings.shoulderAlignmentThreshold;
