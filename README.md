@@ -84,5 +84,3 @@ Add `docs/demo.gif` and reference it here:
 ## License
 MIT – see `LICENSE`.
 
----
-> _Prepared for hiring-manager review – feedback welcome!_
