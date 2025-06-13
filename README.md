@@ -1,80 +1,88 @@
-# Live Posture Corrector
+# Posture Corrector (React + TensorFlow.js)
 
-A privacy-focused web application that helps users maintain good posture by analyzing webcam feed in real-time, entirely client-side.
+## TL;DR
+```bash
+git clone <repo-url> posture-corrector && cd posture-corrector/react_app
+npm i
+npm run dev            # opens http://localhost:5173
+```
 
-## Features
+## What It Does
+Real-time webcam posture analysis running **entirely in the browser**  
+• MoveNet pose detection (TensorFlow.js)  
+• Per-user calibration for accuracy  
+• Visual overlay + Web Notifications (cross-tab cooldown)  
+• No server, no data leaves your machine
 
-- **Real-time posture analysis** using TensorFlow.js and MoveNet pose detection
-- **Privacy-preserving** - all processing happens locally in the browser
-- **Visual feedback** with overlay showing posture status and body points
-- **Tab visibility detection** to pause processing when tab is inactive
-- **Cross-tab notifications** to prevent multiple instances running simultaneously
-- **Performance optimization** with adaptive frame rate and resolution
-- **Responsive design** that works on desktop and mobile devices
-
-## Technical Architecture
-
-### Core Technologies
-
-- **React** - UI framework
-- **TypeScript** - Type safety and developer experience
-- **TensorFlow.js** - Machine learning in the browser
-- **MoveNet** - Lightweight pose detection model
-- **Web APIs** - Page Visibility API, Notifications API, BroadcastChannel API
-
-### Key Components
-
-1. **PostureDetectionService** - Handles model loading and pose analysis
-2. **TabVisibilityService** - Manages tab visibility state and cross-tab communication
-3. **NotificationService** - Provides user notifications for bad posture
-4. **CameraFeed** - Main component for webcam handling and frame processing
-5. **PostureOverlay** - Visual feedback component showing posture status
-
-## Privacy
-
-This application is designed with privacy as a top priority:
-
-- All video processing happens locally in your browser
-- No video data is ever sent to any server
-- No data is stored between sessions
-- Works offline after initial load
+## Why It’s Interesting
+| Area | Detail |
+|------|--------|
+| **AI/ML** | MoveNet + geometric heuristics for slouch & shoulder alignment |
+| **UX** | Guided calibration modal, canvas overlay, configurable alerts |
+| **PWA** | Service-Worker enables background notifications |
+| **DX** | Vite, strict TypeScript, ESLint, Jest |
 
 ## Getting Started
+### 0. Prerequisites  
+Node ≥ 18, modern browser (Chrome 113+ recommended).
 
+### 1. Install & Run
 ```bash
-# Navigate to the React app directory
 cd react_app
-
-# Install dependencies
-npm install
-
-# Start development server
+npm i
 npm run dev
 ```
 
-## Browser Compatibility
+### 2. Production Build
+```bash
+npm run build          # outputs static assets to dist/
+```
 
-- Chrome 83+
-- Firefox 76+
-- Safari 14+
-- Edge 83+
+### 3. Tests
+```bash
+npm run test           # jest + ts-jest
+```
 
-## Notification Setup                                                                                                                                                                            
-                                                                                                                                                                                                  
- ### macOS and Chrome Browser                                                                                                                                                                     
-                                                                                                                                                                                                  
- For the posture notifications to work properly on macOS with Chrome:                                                                                                                             
-                                                                                                                                                                                                  
- 1. Open **System Preferences** (or **System Settings** on newer macOS versions)                                                                                                                  
- 2. Select **Notifications & Focus** (or just **Notifications** on older versions)                                                                                                                
- 3. Scroll down and find **Google Chrome Helper (Alerts)** in the list                                                                                                                            
- 4. Click on it and ensure:                                                                                                                                                                       
-    - **Allow Notifications** is turned ON                                                                                                                                                        
-    - **Alert** style is selected (not Banner)                                                                                                                                                    
-    - **Play sound for notifications** is enabled for audio alerts                                                                                                                                
-                                                                                                                                                                                                  
- Without these settings, you may not see the posture correction notifications when they're triggered.  
+## Repo Layout
+```
+react_app/
+ ├─ src/
+ │  ├─ components/      # UI (CameraFeed, CalibrationModal …)
+ │  ├─ services/        # Core logic (PostureDetectionService …)
+ │  ├─ types/           # Shared TS types
+ │  └─ utils/           # Helper libs
+ ├─ public/             # PWA assets (service-worker.js)
+ └─ vite.config.ts      # Vite setup
+```
+
+## Technical Highlights
+### 1. PostureDetectionService
+* Loads MoveNet on-demand, caches model  
+* Adaptive thresholds from user calibration stored in `localStorage`  
+* Runs ~30 FPS on laptop hardware
+
+### 2. NotificationService
+* Permission flow + user-defined cooldown  
+* `BroadcastChannel` prevents multi-tab spam  
+* Works in background via Service-Worker
+
+## Privacy
+All processing happens **locally in the browser**.  
+No frames are ever sent to any server.
+
+## Screenshots / Demo
+Add `docs/demo.gif` and reference it here:  
+```md
+![demo](docs/demo.gif)
+```
+
+## Roadmap / Nice-to-Haves
+- Mobile layout tuning  
+- Trend analytics export (CSV)  
+- Smoothing filter (OneEuro)
 
 ## License
+MIT – see `LICENSE`.
 
-MIT
+---
+> _Prepared for hiring-manager review – feedback welcome!_
